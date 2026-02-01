@@ -13,7 +13,7 @@ export default function Navbar() {
       {/* map view */}
       <Link
         href="/map-view"
-        className={`p-4 rounded-full hover:opacity-80 transition ${
+        className={`p-4 rounded-full hover:opacity-40 transition ${
           pathname === "/map-view" ? "border-2 border-white" : ""
         }`}
         style={{ backgroundColor: "var(--secondary-color)" }}
@@ -24,7 +24,7 @@ export default function Navbar() {
       {/* home dashboard view*/}
       <Link
         href="/"
-        className={`p-4 rounded-full hover:opacity-80 transition ${
+        className={`p-4 rounded-full hover:opacity-40 transition ${
           pathname === "/" ? "border-2 border-white" : ""
         }`}
         style={{ backgroundColor: "var(--secondary-color)" }}
@@ -35,7 +35,7 @@ export default function Navbar() {
       {/*drone control view */}
       <Link
         href="/drone-control"
-        className={`p-4 rounded-full hover:opacity-80 transition ${
+        className={`p-4 rounded-full hover:opacity-40 transition ${
           pathname === "/drone-control" ? "border-2 border-white" : ""
         }`}
         style={{ backgroundColor: "var(--secondary-color)" }}
