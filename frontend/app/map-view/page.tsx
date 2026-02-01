@@ -1,7 +1,7 @@
-export default function Home() {
+export default function MapView() {
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <h1>Home Dashboard</h1>
+      <h1>Map View</h1>
     </div>
   );
 }
