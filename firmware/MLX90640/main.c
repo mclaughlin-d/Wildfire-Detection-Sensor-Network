@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,6 +67,54 @@ static void MX_I2C1_Init(void);
 #define MLX90640_I2C_ADDR 0x33 << 1
 #define MLX_FRAME_WORDS 832
 
+/* --- float32 <-> float16 helpers --- */
+static uint16_t f32_to_f16(float f)
+{
+    uint32_t x;
+    memcpy(&x, &f, sizeof(x));
+
+    uint16_t sign = (x >> 16) & 0x8000;
+    int32_t exp = ((x >> 23) & 0xFF) - 127 + 15;
+    uint32_t mant = x & 0x007FFFFF;
+
+    if (exp <= 0)
+    {
+        /* Flush to signed zero (subnormals not worth the cost on MCU) */
+        return sign;
+    }
+    else if (exp >= 31)
+    {
+        /* Overflow -> infinity */
+        return sign | 0x7C00;
+    }
+    return sign | ((uint16_t)exp << 10) | (uint16_t)(mant >> 13);
+}
+
+static float f16_to_f32(uint16_t h)
+{
+    uint32_t sign = (uint32_t)(h & 0x8000) << 16;
+    uint32_t exp = (h >> 10) & 0x1F;
+    uint32_t mant = h & 0x03FF;
+    uint32_t x;
+
+    if (exp == 0)
+    {
+        x = sign; /* zero / subnormal -> zero */
+    }
+    else if (exp == 31)
+    {
+        x = sign | 0x7F800000 | (mant << 13); /* inf / NaN */
+    }
+    else
+    {
+        x = sign | ((exp - 15 + 127) << 23) | (mant << 13);
+    }
+
+    float f;
+    memcpy(&f, &x, sizeof(f));
+    return f;
+}
+
 struct paramsMLX90640
 {
     int16_t kVdd;
@@ -99,10 +148,11 @@ struct paramsMLX90640
 
 struct paramsMLX90640 mlx90640 = {0};
 
-float scratchData[768];        // for calibration parameter calculations
-uint16_t frameData[834] = {0}; // for reading frame data from sensor
-uint16_t eepromData[832];      // for storing eeprom data
-float frameBuf[24 * 32] = {0}; // for final float temperature values for each frame
+float scratchData[768];           // for calibration parameter calculations
+uint16_t frameData[834] = {0};    // for reading frame data from sensor
+uint16_t eepromData[832];         // for storing eeprom data
+float tempBuf[24 * 32] = {0};     // for temp calculation
+uint16_t frameBuf[24 * 32] = {0}; // for final float temperature values for each frame
 
 // various messages for sending over UART
 uint8_t Buffer[25] = {0};
@@ -138,7 +188,7 @@ HAL_StatusTypeDef MLX_ReadReg(I2C_HandleTypeDef *hi2c,
     if (status != HAL_OK)
         return status;
 
-    *value = (buffer[0] << 8) | buffer[1];
+    *value = (buffer[0] << 8) | buffer[1]; // MLX = MSB first
     return HAL_OK;
 }
 
@@ -165,7 +215,7 @@ HAL_StatusTypeDef MLX_ReadBlock(I2C_HandleTypeDef *hi2c,
                                 uint16_t words,
                                 uint16_t *dest)
 {
-    uint8_t raw[64];
+    uint8_t raw[64]; // small buffer
     uint16_t remaining = words;
     uint16_t offset = 0;
 
@@ -1191,11 +1241,34 @@ void MLX90640_CalculateTo(float emissivity, float tr, float *result)
  *    @param  framebuf 24*32 floating point memory buffer
  *    @return 0 on success
  */
-int MLX90640_getFrame(float *framebuf)
+int MLX90640_getFrame()
 {
     float emissivity = 0.95;
     float tr = 23.15;
     float ta = 0.0;
+    int status;
+
+    for (uint8_t page = 0; page < 2; page++)
+    {
+        status = MLX90640_GetFrameData();
+        if (status < 0)
+            return status;
+
+        ta = MLX90640_GetTa();
+        tr = ta - OPENAIR_TA_SHIFT;
+        MLX90640_CalculateTo(emissivity, tr, tempBuf);
+    }
+
+    /* Convert float32 -> float16 and store */
+    for (int i = 0; i < 24 * 32; i++)
+    {
+        frameBuf[i] = f32_to_f16(tempBuf[i]);
+    }
+    return 0;
+}
+
+int MLX90640_getRawFrame()
+{
     int status;
 
     for (uint8_t page = 0; page < 2; page++)
@@ -1206,16 +1279,12 @@ int MLX90640_getFrame(float *framebuf)
         {
             return status;
         }
-
-        ta = MLX90640_GetTa();      // Store ambient temp locally
-        tr = ta - OPENAIR_TA_SHIFT; // For a MLX90640 in the open air the shift is
-                                    // -8 degC.
-        MLX90640_CalculateTo(emissivity, tr, framebuf);
     }
+
     return 0;
 }
 
-void DiagnosticTest(void)
+void MLX90640_diagnostic_test(void)
 {
     char buf[100];
     uint16_t testValue;
@@ -1278,6 +1347,115 @@ void DiagnosticTest(void)
     }
 }
 
+/**
+ * Will print the contents of the EEPROM to UART. Use for debugging.
+ */
+void MLX90640_Dump_EEPROM()
+{
+    char regBuf[32] = {0};
+    for (int i = 0; i < 832; i++)
+    {
+        sprintf(regBuf, "0x%04X\n", eepromData[i]);
+        HAL_UART_Transmit(&huart2, regBuf, sizeof(regBuf), 10000);
+    }
+}
+
+/**
+ * Performs sensor initialization. Reads required information from EEPROM, and then
+ * sets various settings (chess mode for readout pattern, 18-bit resolution, 4Hz refresh rate
+ */
+void MLX90640_InitSensor(uint8_t debug)
+{
+    MLX_ReadBlock(&hi2c1, 0x2400, 832, eepromData);
+    // set to chess mode
+    if (debug)
+        HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
+    uint16_t controlRegister1;
+
+    HAL_StatusTypeDef status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
+    }
+
+    uint16_t value = (controlRegister1 | 0x1000);
+    status = MLX_WriteReg(&hi2c1, 0x800D, value);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
+    }
+
+    // verify mode set
+    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    int modeRAM = (controlRegister1 & 0x1000) >> 12;
+    if (modeRAM == 1 && debug)
+    {
+        HAL_UART_Transmit(&huart2, ChessMsg, sizeof(ChessMsg), 10000);
+    }
+    if (debug)
+        HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
+
+    // set resolution
+    if (debug)
+        HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
+    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
+    }
+
+    uint8_t resolution = 2; // 18-bit
+    value = (resolution & 0x03) << 10;
+    value = (controlRegister1 & 0xF3FF) | value;
+    status = MLX_WriteReg(&hi2c1, 0x800D, value);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
+    }
+    if (debug)
+        HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
+
+    // set frame rate
+    if (debug)
+        HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
+    uint8_t refreshRate = 4; // 4Hz
+    value = (refreshRate & 0x07) << 7;
+
+    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
+    }
+    value = (controlRegister1 & 0xFC7F) | value;
+    status = MLX_WriteReg(&hi2c1, 0x800D, value);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
+    }
+
+    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
+    }
+    // verify rate
+    int rate = (controlRegister1 & 0x0380) >> 7;
+    if (debug)
+    {
+        if (rate == 2)
+        {
+            uint8_t tempbuftwo[] = "RATE 2 Hz\n";
+            HAL_UART_Transmit(&huart2, tempbuftwo, sizeof(tempbuftwo), 10000);
+        }
+        else if (rate == 4)
+        {
+            uint8_t tempbuftwo[] = "RATE 4 Hz\n";
+            HAL_UART_Transmit(&huart2, tempbuftwo, sizeof(tempbuftwo), 10000);
+        }
+        HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
+    }
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -1313,96 +1491,13 @@ int main(void)
     MX_I2C1_Init();
     /* USER CODE BEGIN 2 */
 
-    MLX_ReadBlock(&hi2c1, 0x2400, 832, eepromData);
-    HAL_Delay(100);
+    // scans for MLX90640 i2c address and runs some basic tests
+    // MLX90640_diagnostic_test();
 
-    // set to chess mode
-    HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
-    uint16_t controlRegister1;
-
-    HAL_StatusTypeDef status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
-    if (status != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
-    }
-
-    uint16_t value = (controlRegister1 | 0x1000);
-    status = MLX_WriteReg(&hi2c1, 0x800D, value);
-    if (status != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
-    }
-
-    // verify mode set
-    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
-    int modeRAM = (controlRegister1 & 0x1000) >> 12;
-    if (modeRAM == 1)
-    {
-        HAL_UART_Transmit(&huart2, ChessMsg, sizeof(ChessMsg), 10000);
-    }
-    HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
-
-    // set resolution
-    HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
-    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
-    if (status != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
-    }
-
-    uint8_t resolution = 2; // 18-bit
-    value = (resolution & 0x03) << 10;
-    value = (controlRegister1 & 0xF3FF) | value;
-    status = MLX_WriteReg(&hi2c1, 0x800D, value);
-    if (status != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
-    }
-    HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
-
-    // set frame rate
-    HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
-    uint8_t refreshRate = 4; // 4Hz
-    value = (refreshRate & 0x07) << 7;
-
-    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
-    if (status != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
-    }
-    value = (controlRegister1 & 0xFC7F) | value;
-    status = MLX_WriteReg(&hi2c1, 0x800D, value);
-    if (status != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
-    }
-
-    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
-    if (status != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
-    }
-    // verify rate
-    int rate = (controlRegister1 & 0x0380) >> 7;
-    if (rate == 2)
-    {
-        uint8_t tempbuf[] = "RATE 2 Hz\n";
-        HAL_UART_Transmit(&huart2, tempbuf, sizeof(tempbuf), 10000);
-    }
-    else if (rate == 4)
-    {
-        uint8_t tempbuf[] = "RATE 4 Hz\n";
-        HAL_UART_Transmit(&huart2, tempbuf, sizeof(tempbuf), 10000);
-    }
-
-    HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
+    MLX90640_InitSensor(0);
 
     // extract calibration parameters from EEPROM
     MLX90640_ExtractParameters(eepromData);
-
-    HAL_Delay(100);
-
-    DiagnosticTest();
 
     /* USER CODE END 2 */
 
@@ -1412,20 +1507,35 @@ int main(void)
     {
 
         HAL_UART_Transmit(&huart2, StartFrameMsg, sizeof(StartFrameMsg), 10000);
-
-        MLX90640_getFrame(frameBuf);
-
-        HAL_Delay(100);
+        MLX90640_getFrame();
+        HAL_UART_Transmit(&huart2, EndFrameMsg, sizeof(EndFrameMsg), 10000);
 
         uint16_t j, k;
         float temp;
-        char rowBuf[34];
+
+        // prints out float values read for each temperature. un-comment for debugging
+        /*
+        char regRawBuf[34] = { 0 };
+        for (j = 0; j < 24; j++) {
+            for (k = 1; k < 33; k++) {
+                temp = f16_to_f32(frameBuf[j * 32 + k]);
+                // NOTE: had to manually add -u _printf_float to flags for compilation to do this
+                // will not be worth it for actual final project
+                sprintf(regRawBuf, "%lf, \0", temp);
+                HAL_UART_Transmit(&huart2, regRawBuf, sizeof(regRawBuf), 100000);
+            }
+            char linesep[] = "\n";
+            HAL_UART_Transmit(&huart2, linesep, sizeof(linesep), 100000);
+        }
+        */
+
+        char rowBuf[34] = {0};
         for (j = 0; j < 24; j++)
         {
             rowBuf[0] = '\n';
             for (k = 1; k < 33; k++)
             {
-                temp = frameBuf[j * 32 + k];
+                temp = f16_to_f32(frameBuf[j * 32 + k]);
                 if (temp < 10)
                     rowBuf[k] = '=';
                 else if (temp < 20)
@@ -1454,7 +1564,7 @@ int main(void)
         }
 
         HAL_UART_Transmit(&huart2, EndFrameMsg, sizeof(EndFrameMsg), 10000);
-        HAL_Delay(500);
+        HAL_Delay(10000);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
