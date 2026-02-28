@@ -1,207 +1,306 @@
-/**
- ******************************************************************************
- * @file    mlx90640.c
- * @brief   MLX90640 thermal camera driver implementation
- ******************************************************************************
- */
-
 #include "mlx90640.h"
+#include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 
-/* ── Private: active I2C handle ───────────────────────────────────────────── */
-static I2C_HandleTypeDef *thermal_i2c = NULL;
 
-/* ── Public data ──────────────────────────────────────────────────────────── */
-paramsMLX90640 mlx90640    = {0};
-float          tempBuf[24 * 32]  = {0};
-uint16_t       frameBuf[24 * 32] = {0};
-uint16_t       frameData[834]    = {0};
-uint16_t       eepromData[832]   = {0};
-float          scratchData[768];          // internal scratch buffer
-
-/* ── Debug UART handle (set by application if needed) ─────────────────────── */
-extern UART_HandleTypeDef huart2;         // keep using the same UART as before
-
-/* ── UART message strings ─────────────────────────────────────────────────── */
-static uint8_t StartMSG[]        = "Starting I2C Scanning: \r\n";
-static uint8_t EndMSG[]          = "Done! \r\n\r\n";
-static uint8_t Space[]           = " - ";
-static uint8_t Buffer[25]        = {0};
-static uint8_t StartFrameMsg[]   = "\nStarting to read frame: \n";
-static uint8_t EndFrameMsg[]     = "\nFinished frame read!\n";
-static uint8_t ModeSetMsg[]      = "\nSet chess mode\n";
-static uint8_t ResolutionSetMsg[]= "\nSet resolution\n";
-static uint8_t FrameRateSetMsg[] = "\nSet frame rate\n";
-static uint8_t ErrorMsgRead[]    = "\nError in read\n";
-static uint8_t ErrorMsgWrite[]   = "\nError in write\n";
-static uint8_t ChessMsg[]        = "\nCHESS\n";
-
-/* ============================================================================
- *  Initialisation
- * ========================================================================== */
-
-void MLX90640_SetI2C(I2C_HandleTypeDef *hi2c)
-{
-    thermal_i2c = hi2c;
-}
-
-/* ============================================================================
- *  float16 helpers
- * ========================================================================== */
-
-uint16_t f32_to_f16(float f)
+static uint16_t f32_to_f16(float f)
 {
     uint32_t x;
     memcpy(&x, &f, sizeof(x));
 
     uint16_t sign = (x >> 16) & 0x8000;
-    int32_t  exp  = ((x >> 23) & 0xFF) - 127 + 15;
+    int32_t exp = ((x >> 23) & 0xFF) - 127 + 15;
     uint32_t mant = x & 0x007FFFFF;
 
-    if (exp <= 0)  return sign;
-    if (exp >= 31) return sign | 0x7C00;
+    if (exp <= 0)
+    {
+        /* Flush to signed zero (subnormals not worth the cost on MCU) */
+        return sign;
+    }
+    else if (exp >= 31)
+    {
+        /* Overflow -> infinity */
+        return sign | 0x7C00;
+    }
     return sign | ((uint16_t)exp << 10) | (uint16_t)(mant >> 13);
 }
 
-float f16_to_f32(uint16_t h)
+static float f16_to_f32(uint16_t h)
 {
     uint32_t sign = (uint32_t)(h & 0x8000) << 16;
-    uint32_t exp  = (h >> 10) & 0x1F;
+    uint32_t exp = (h >> 10) & 0x1F;
     uint32_t mant = h & 0x03FF;
     uint32_t x;
 
-    if      (exp == 0)  x = sign;
-    else if (exp == 31) x = sign | 0x7F800000 | (mant << 13);
-    else                x = sign | ((exp - 15 + 127) << 23) | (mant << 13);
+    if (exp == 0)
+    {
+        x = sign; /* zero / subnormal -> zero */
+    }
+    else if (exp == 31)
+    {
+        x = sign | 0x7F800000 | (mant << 13); /* inf / NaN */
+    }
+    else
+    {
+        x = sign | ((exp - 15 + 127) << 23) | (mant << 13);
+    }
 
     float f;
     memcpy(&f, &x, sizeof(f));
     return f;
 }
 
-/* ============================================================================
- *  Low-level I2C helpers
- * ========================================================================== */
-
-HAL_StatusTypeDef MLX_ReadReg(uint16_t reg, uint16_t *value)
+struct paramsMLX90640
 {
-    uint8_t buf[2];
-    HAL_StatusTypeDef st = HAL_I2C_Mem_Read(thermal_i2c, MLX90640_I2C_ADDR,
-                                             reg, I2C_MEMADD_SIZE_16BIT,
-                                             buf, 2, 1000);
-    if (st != HAL_OK) return st;
-    *value = (buf[0] << 8) | buf[1];
+    int16_t kVdd;
+    int16_t vdd25;
+    float KvPTAT;
+    float KtPTAT;
+    uint16_t vPTAT25;
+    float alphaPTAT;
+    int16_t gainEE;
+    float tgc;
+    float cpKv;
+    float cpKta;
+    uint8_t resolutionEE;
+    uint8_t calibrationModeEE;
+    float KsTa;
+    float ksTo[5];
+    int16_t ct[5];
+    uint16_t alpha[768];
+    uint8_t alphaScale;
+    int16_t offset[768];
+    int8_t kta[768];
+    uint8_t ktaScale;
+    int8_t kv[768];
+    uint8_t kvScale;
+    float cpAlpha[2];
+    int16_t cpOffset[2];
+    float ilChessC[3];
+    uint16_t brokenPixels[5];
+    uint16_t outlierPixels[5];
+};
+
+struct paramsMLX90640 mlx90640 = {0};
+
+float scratchData[768];           // for calibration parameter calculations
+uint16_t frameData[834] = {0};    // for reading frame data from sensor
+uint16_t eepromData[832];         // for storing eeprom data
+float tempBuf[24 * 32] = {0};     // for temp calculation
+uint16_t frameBuf[24 * 32] = {0}; // for final float temperature values for each frame
+
+// various messages for sending over UART
+uint8_t Buffer[25] = {0};
+uint8_t Space[] = " - ";
+uint8_t StartMSG[] = "Starting I2C Scanning: \r\n";
+uint8_t EndMSG[] = "Done! \r\n\r\n";
+uint8_t StartFrameMsg[] = "\nStarting to read frame: \n";
+uint8_t EndFrameMsg[] = "\nFinished frame read!\n";
+uint8_t IsFrameReadyMsg[] = "\nFrame data ready\n";
+uint8_t ModeSetMsg[] = "\nSet chess mode\n";
+uint8_t ResolutionSetMsg[] = "\nSet resolution\n";
+uint8_t FrameRateSetMsg[] = "\nSet frame rate\n";
+uint8_t ErrorMsgRead[] = "\nError in read\n";
+uint8_t ErrorMsgWrite[] = "\nError in write\n";
+uint8_t ChessMsg[] = "\nCHESS\n";
+uint8_t CrashMsg[] = "\n\nCRASH\n\n";
+
+HAL_StatusTypeDef MLX_ReadReg(I2C_HandleTypeDef *hi2c,
+                              uint16_t reg,
+                              uint16_t *value)
+{
+    uint8_t buffer[2];
+
+    HAL_StatusTypeDef status =
+        HAL_I2C_Mem_Read(hi2c,
+                         MLX90640_I2C_ADDR,
+                         reg,
+                         I2C_MEMADD_SIZE_16BIT,
+                         buffer,
+                         2,
+                         1000);
+
+    if (status != HAL_OK)
+        return status;
+
+    *value = (buffer[0] << 8) | buffer[1]; // MLX = MSB first
     return HAL_OK;
 }
 
-HAL_StatusTypeDef MLX_WriteReg(uint16_t reg, uint16_t value)
+HAL_StatusTypeDef MLX_WriteReg(I2C_HandleTypeDef *hi2c,
+                               uint16_t reg,
+                               uint16_t value)
 {
-    uint8_t buf[2] = { value >> 8, value & 0xFF };
-    return HAL_I2C_Mem_Write(thermal_i2c, MLX90640_I2C_ADDR,
-                             reg, I2C_MEMADD_SIZE_16BIT,
-                             buf, 2, 1000);
+    uint8_t buffer[2];
+
+    buffer[0] = value >> 8;   // MSB
+    buffer[1] = value & 0xFF; // LSB
+
+    return HAL_I2C_Mem_Write(hi2c,
+                             MLX90640_I2C_ADDR,
+                             reg,
+                             I2C_MEMADD_SIZE_16BIT,
+                             buffer,
+                             2,
+                             1000);
 }
 
-HAL_StatusTypeDef MLX_ReadBlock(uint16_t startReg, uint16_t words, uint16_t *dest)
+HAL_StatusTypeDef MLX_ReadBlock(I2C_HandleTypeDef *hi2c,
+                                uint16_t startReg,
+                                uint16_t words,
+                                uint16_t *dest)
 {
-    uint8_t  raw[64];
+    uint8_t raw[64]; // small buffer
     uint16_t remaining = words;
-    uint16_t offset    = 0;
+    uint16_t offset = 0;
 
     while (remaining)
     {
         uint16_t chunkWords = (remaining > 32) ? 32 : remaining;
         uint16_t chunkBytes = chunkWords * 2;
 
-        HAL_StatusTypeDef st = HAL_I2C_Mem_Read(thermal_i2c, MLX90640_I2C_ADDR,
-                                                 startReg + offset,
-                                                 I2C_MEMADD_SIZE_16BIT,
-                                                 raw, chunkBytes, 2000);
-        if (st != HAL_OK) return st;
+        HAL_StatusTypeDef status =
+            HAL_I2C_Mem_Read(hi2c,
+                             MLX90640_I2C_ADDR,
+                             startReg + offset,
+                             I2C_MEMADD_SIZE_16BIT,
+                             raw,
+                             chunkBytes,
+                             2000);
+
+        if (status != HAL_OK)
+            return status;
 
         for (uint16_t i = 0; i < chunkWords; i++)
-            dest[offset + i] = (raw[2 * i] << 8) | raw[2 * i + 1];
+        {
+            dest[offset + i] =
+                (raw[2 * i] << 8) | raw[2 * i + 1];
+        }
 
-        offset    += chunkWords;
+        offset += chunkWords;
         remaining -= chunkWords;
     }
+
     return HAL_OK;
 }
 
-/* ============================================================================
- *  EEPROM parameter extraction
- * ========================================================================== */
-
-static void ExtractVDDParameters(uint16_t *eeData)
+void ExtractVDDParameters(uint16_t *eeData)
 {
-    int16_t kVdd = (eeData[51] & 0xFF00) >> 8;
-    if (kVdd > 127) kVdd -= 256;
-    kVdd *= 32;
+    int16_t kVdd;
+    int16_t vdd25;
 
-    int16_t vdd25 = eeData[51] & 0x00FF;
+    kVdd = eeData[51];
+
+    kVdd = (eeData[51] & 0xFF00) >> 8;
+    if (kVdd > 127)
+    {
+        kVdd = kVdd - 256;
+    }
+    kVdd = 32 * kVdd;
+    vdd25 = eeData[51] & 0x00FF;
     vdd25 = ((vdd25 - 256) << 5) - 8192;
 
-    mlx90640.kVdd  = kVdd;
+    mlx90640.kVdd = kVdd;
     mlx90640.vdd25 = vdd25;
 }
 
-static void ExtractPTATParameters(uint16_t *eeData)
+void ExtractPTATParameters(uint16_t *eeData)
 {
-    float KvPTAT = (eeData[50] & 0xFC00) >> 10;
-    if (KvPTAT > 31) KvPTAT -= 64;
-    KvPTAT /= 4096.0f;
+    float KvPTAT;
+    float KtPTAT;
+    int16_t vPTAT25;
+    float alphaPTAT;
 
-    float KtPTAT = eeData[50] & 0x03FF;
-    if (KtPTAT > 511) KtPTAT -= 1024;
-    KtPTAT /= 8.0f;
+    KvPTAT = (eeData[50] & 0xFC00) >> 10;
+    if (KvPTAT > 31)
+    {
+        KvPTAT = KvPTAT - 64;
+    }
+    KvPTAT = KvPTAT / 4096;
 
-    int16_t vPTAT25  = eeData[49];
-    float alphaPTAT  = (eeData[16] & 0xF000) / pow(2.0, 14) + 8.0f;
+    KtPTAT = eeData[50] & 0x03FF;
+    if (KtPTAT > 511)
+    {
+        KtPTAT = KtPTAT - 1024;
+    }
+    KtPTAT = KtPTAT / 8;
 
-    mlx90640.KvPTAT    = KvPTAT;
-    mlx90640.KtPTAT    = KtPTAT;
-    mlx90640.vPTAT25   = vPTAT25;
+    vPTAT25 = eeData[49];
+
+    alphaPTAT = (eeData[16] & 0xF000) / pow(2, (double)14) + 8.0f;
+
+    mlx90640.KvPTAT = KvPTAT;
+    mlx90640.KtPTAT = KtPTAT;
+    mlx90640.vPTAT25 = vPTAT25;
     mlx90640.alphaPTAT = alphaPTAT;
 }
 
-static void ExtractGainParameters(uint16_t *eeData)
+void ExtractGainParameters(uint16_t *eeData)
 {
-    int16_t gainEE = eeData[48];
-    if (gainEE > 32767) gainEE -= 65536;
+    int16_t gainEE;
+
+    gainEE = eeData[48];
+    if (gainEE > 32767)
+    {
+        gainEE = gainEE - 65536;
+    }
+
     mlx90640.gainEE = gainEE;
 }
 
-static void ExtractTgcParameters(uint16_t *eeData)
+void ExtractTgcParameters(uint16_t *eeData)
 {
-    float tgc = eeData[60] & 0x00FF;
-    if (tgc > 127) tgc -= 256;
-    mlx90640.tgc = tgc / 32.0f;
+    float tgc;
+    tgc = eeData[60] & 0x00FF;
+    if (tgc > 127)
+    {
+        tgc = tgc - 256;
+    }
+    tgc = tgc / 32.0f;
+
+    mlx90640.tgc = tgc;
 }
 
-static void ExtractResolutionParameters(uint16_t *eeData)
+void ExtractResolutionParameters(uint16_t *eeData)
 {
-    mlx90640.resolutionEE = (eeData[56] & 0x3000) >> 12;
+    uint8_t resolutionEE;
+    resolutionEE = (eeData[56] & 0x3000) >> 12;
+
+    mlx90640.resolutionEE = resolutionEE;
 }
 
-static void ExtractKsTaParameters(uint16_t *eeData)
+void ExtractKsTaParameters(uint16_t *eeData)
 {
-    float KsTa = (eeData[60] & 0xFF00) >> 8;
-    if (KsTa > 127) KsTa -= 256;
-    mlx90640.KsTa = KsTa / 8192.0f;
+    float KsTa;
+    KsTa = (eeData[60] & 0xFF00) >> 8;
+    if (KsTa > 127)
+    {
+        KsTa = KsTa - 256;
+    }
+    KsTa = KsTa / 8192.0f;
+
+    mlx90640.KsTa = KsTa;
 }
 
-static void ExtractKsToParameters(uint16_t *eeData)
+void ExtractKsToParameters(uint16_t *eeData)
 {
-    int8_t step = ((eeData[63] & 0x3000) >> 12) * 10;
+    int KsToScale;
+    int8_t step;
+
+    step = ((eeData[63] & 0x3000) >> 12) * 10;
 
     mlx90640.ct[0] = -40;
     mlx90640.ct[1] = 0;
-    mlx90640.ct[2] = ((eeData[63] & 0x00F0) >> 4) * step;
-    mlx90640.ct[3] = mlx90640.ct[2] + ((eeData[63] & 0x0F00) >> 8) * step;
+    mlx90640.ct[2] = (eeData[63] & 0x00F0) >> 4;
+    mlx90640.ct[3] = (eeData[63] & 0x0F00) >> 8;
+
+    mlx90640.ct[2] = mlx90640.ct[2] * step;
+    mlx90640.ct[3] = mlx90640.ct[2] + mlx90640.ct[3] * step;
     mlx90640.ct[4] = 400;
 
-    int KsToScale = 1 << ((eeData[63] & 0x000F) + 8);
+    KsToScale = (eeData[63] & 0x000F) + 8;
+    KsToScale = 1 << KsToScale;
 
     mlx90640.ksTo[0] = eeData[61] & 0x00FF;
     mlx90640.ksTo[1] = (eeData[61] & 0xFF00) >> 8;
@@ -210,281 +309,596 @@ static void ExtractKsToParameters(uint16_t *eeData)
 
     for (int i = 0; i < 4; i++)
     {
-        if (mlx90640.ksTo[i] > 127) mlx90640.ksTo[i] -= 256;
-        mlx90640.ksTo[i] /= KsToScale;
+        if (mlx90640.ksTo[i] > 127)
+        {
+            mlx90640.ksTo[i] = mlx90640.ksTo[i] - 256;
+        }
+        mlx90640.ksTo[i] = mlx90640.ksTo[i] / KsToScale;
     }
-    mlx90640.ksTo[4] = -0.0002f;
+
+    mlx90640.ksTo[4] = -0.0002;
 }
 
-static void ExtractCPParameters(uint16_t *eeData)
+void ExtractCPParameters(uint16_t *eeData)
 {
-    float   alphaSP[2];
+    float alphaSP[2];
     int16_t offsetSP[2];
-    uint8_t alphaScale = ((eeData[32] & 0xF000) >> 12) + 27;
+    float cpKv;
+    float cpKta;
+    uint8_t alphaScale;
+    uint8_t ktaScale1;
+    uint8_t kvScale;
 
-    offsetSP[0] = eeData[58] & 0x03FF;
-    if (offsetSP[0] > 511) offsetSP[0] -= 1024;
+    alphaScale = ((eeData[32] & 0xF000) >> 12) + 27;
+
+    offsetSP[0] = (eeData[58] & 0x03FF);
+    if (offsetSP[0] > 511)
+    {
+        offsetSP[0] = offsetSP[0] - 1024;
+    }
 
     offsetSP[1] = (eeData[58] & 0xFC00) >> 10;
-    if (offsetSP[1] > 31) offsetSP[1] -= 64;
-    offsetSP[1] += offsetSP[0];
+    if (offsetSP[1] > 31)
+    {
+        offsetSP[1] = offsetSP[1] - 64;
+    }
+    offsetSP[1] = offsetSP[1] + offsetSP[0];
 
-    alphaSP[0] = eeData[57] & 0x03FF;
-    if (alphaSP[0] > 511) alphaSP[0] -= 1024;
-    alphaSP[0] /= pow(2.0, alphaScale);
+    alphaSP[0] = (eeData[57] & 0x03FF);
+    if (alphaSP[0] > 511)
+    {
+        alphaSP[0] = alphaSP[0] - 1024;
+    }
+    alphaSP[0] = alphaSP[0] / pow(2, (double)alphaScale);
 
     alphaSP[1] = (eeData[57] & 0xFC00) >> 10;
-    if (alphaSP[1] > 31) alphaSP[1] -= 64;
-    alphaSP[1] = (1 + alphaSP[1] / 128.0f) * alphaSP[0];
+    if (alphaSP[1] > 31)
+    {
+        alphaSP[1] = alphaSP[1] - 64;
+    }
+    alphaSP[1] = (1 + alphaSP[1] / 128) * alphaSP[0];
 
-    float   cpKta     = eeData[59] & 0x00FF;
-    if (cpKta > 127) cpKta -= 256;
-    uint8_t ktaScale1 = ((eeData[56] & 0x00F0) >> 4) + 8;
-    mlx90640.cpKta = cpKta / pow(2.0, ktaScale1);
+    cpKta = (eeData[59] & 0x00FF);
+    if (cpKta > 127)
+    {
+        cpKta = cpKta - 256;
+    }
+    ktaScale1 = ((eeData[56] & 0x00F0) >> 4) + 8;
+    mlx90640.cpKta = cpKta / pow(2, (double)ktaScale1);
 
-    float   cpKv    = (eeData[59] & 0xFF00) >> 8;
-    if (cpKv > 127) cpKv -= 256;
-    uint8_t kvScale = (eeData[56] & 0x0F00) >> 8;
-    mlx90640.cpKv = cpKv / pow(2.0, kvScale);
+    cpKv = (eeData[59] & 0xFF00) >> 8;
+    if (cpKv > 127)
+    {
+        cpKv = cpKv - 256;
+    }
+    kvScale = (eeData[56] & 0x0F00) >> 8;
+    mlx90640.cpKv = cpKv / pow(2, (double)kvScale);
 
-    mlx90640.cpAlpha[0]  = alphaSP[0];
-    mlx90640.cpAlpha[1]  = alphaSP[1];
+    mlx90640.cpAlpha[0] = alphaSP[0];
+    mlx90640.cpAlpha[1] = alphaSP[1];
     mlx90640.cpOffset[0] = offsetSP[0];
     mlx90640.cpOffset[1] = offsetSP[1];
 }
 
-static void ExtractAlphaParameters(uint16_t *eeData)
+void ExtractAlphaParameters(uint16_t *eeData)
 {
-    int16_t accRow[24], accColumn[32];
-    int     p = 0;
-    uint8_t accRemScale    = eeData[32] & 0x000F;
-    uint8_t accColumnScale = (eeData[32] & 0x00F0) >> 4;
-    uint8_t accRowScale    = (eeData[32] & 0x0F00) >> 8;
-    uint8_t alphaScale     = ((eeData[32] & 0xF000) >> 12) + 30;
-    int     alphaRef       = eeData[33];
+    int16_t accRow[24];
+    int16_t accColumn[32];
+    int p = 0;
+    int alphaRef;
+    uint8_t alphaScale;
+    uint8_t accRowScale;
+    uint8_t accColumnScale;
+    uint8_t accRemScale;
+    float temp;
+
+    accRemScale = eeData[32] & 0x000F;
+    accColumnScale = (eeData[32] & 0x00F0) >> 4;
+    accRowScale = (eeData[32] & 0x0F00) >> 8;
+    alphaScale = ((eeData[32] & 0xF000) >> 12) + 30;
+    alphaRef = eeData[33];
 
     for (int i = 0; i < 6; i++)
     {
         p = i * 4;
-        accRow[p+0] =  eeData[34+i] & 0x000F;
-        accRow[p+1] = (eeData[34+i] & 0x00F0) >> 4;
-        accRow[p+2] = (eeData[34+i] & 0x0F00) >> 8;
-        accRow[p+3] = (eeData[34+i] & 0xF000) >> 12;
+        accRow[p + 0] = (eeData[34 + i] & 0x000F);
+        accRow[p + 1] = (eeData[34 + i] & 0x00F0) >> 4;
+        accRow[p + 2] = (eeData[34 + i] & 0x0F00) >> 8;
+        accRow[p + 3] = (eeData[34 + i] & 0xF000) >> 12;
     }
-    for (int i = 0; i < 24; i++) if (accRow[i] > 7) accRow[i] -= 16;
+
+    for (int i = 0; i < 24; i++)
+    {
+        if (accRow[i] > 7)
+        {
+            accRow[i] = accRow[i] - 16;
+        }
+    }
 
     for (int i = 0; i < 8; i++)
     {
         p = i * 4;
-        accColumn[p+0] =  eeData[40+i] & 0x000F;
-        accColumn[p+1] = (eeData[40+i] & 0x00F0) >> 4;
-        accColumn[p+2] = (eeData[40+i] & 0x0F00) >> 8;
-        accColumn[p+3] = (eeData[40+i] & 0xF000) >> 12;
+        accColumn[p + 0] = (eeData[40 + i] & 0x000F);
+        accColumn[p + 1] = (eeData[40 + i] & 0x00F0) >> 4;
+        accColumn[p + 2] = (eeData[40 + i] & 0x0F00) >> 8;
+        accColumn[p + 3] = (eeData[40 + i] & 0xF000) >> 12;
     }
-    for (int i = 0; i < 32; i++) if (accColumn[i] > 7) accColumn[i] -= 16;
+
+    for (int i = 0; i < 32; i++)
+    {
+        if (accColumn[i] > 7)
+        {
+            accColumn[i] = accColumn[i] - 16;
+        }
+    }
 
     for (int i = 0; i < 24; i++)
+    {
         for (int j = 0; j < 32; j++)
         {
             p = 32 * i + j;
-            scratchData[p] = (eeData[64+p] & 0x03F0) >> 4;
-            if (scratchData[p] > 31) scratchData[p] -= 64;
-            scratchData[p] *= (1 << accRemScale);
-            scratchData[p]  = alphaRef + (accRow[i] << accRowScale)
-                            + (accColumn[j] << accColumnScale) + scratchData[p];
-            scratchData[p] /= pow(2.0, alphaScale);
-            scratchData[p] -= mlx90640.tgc * (mlx90640.cpAlpha[0] + mlx90640.cpAlpha[1]) / 2.0f;
-            scratchData[p]  = SCALEALPHA / scratchData[p];
-        }
+            scratchData[p] = (eeData[64 + p] & 0x03F0) >> 4;
+            if (scratchData[p] > 31)
+            {
+                scratchData[p] = scratchData[p] - 64;
+            }
+            scratchData[p] = scratchData[p] * (1 << accRemScale);
+            scratchData[p] = (alphaRef + (accRow[i] << accRowScale) + (accColumn[j] << accColumnScale) + scratchData[p]);
+            scratchData[p] = scratchData[p] / pow(2, (double)alphaScale);
+            scratchData[p] = scratchData[p] - mlx90640.tgc * (mlx90640.cpAlpha[0] + mlx90640.cpAlpha[1]) / 2;
+            scratchData[p] = SCALEALPHA / scratchData[p];
 
-    float temp = scratchData[0];
+            if (i == 0 && j == 0)
+                temp = scratchData[p];
+            else
+            {
+                if (scratchData[p] > temp)
+                    temp = scratchData[p];
+            }
+        }
+    }
+
+    temp = scratchData[0];
     for (int i = 1; i < 768; i++)
-        if (scratchData[i] > temp) temp = scratchData[i];
+    {
+        if (scratchData[i] > temp)
+        {
+            temp = scratchData[i];
+        }
+    }
 
     alphaScale = 0;
-    if (temp <= 0) temp = 1;
-    while (temp < 32768) { temp *= 2; alphaScale++; }
+    if (temp <= 0)
+        temp = 1; // prevent lock
+    while (temp < 32768)
+    {
+        temp = temp * 2;
+        alphaScale = alphaScale + 1;
+    }
 
     for (int i = 0; i < 768; i++)
-        mlx90640.alpha[i] = (uint16_t)(scratchData[i] * pow(2.0, alphaScale) + 0.5f);
+    {
+        temp = scratchData[i] * pow(2, (double)alphaScale);
+        mlx90640.alpha[i] = (temp + 0.5);
+    }
 
     mlx90640.alphaScale = alphaScale;
 }
 
-static void ExtractOffsetParameters(uint16_t *eeData)
+void ExtractOffsetParameters(uint16_t *eeData)
 {
-    int16_t occRow[24], occColumn[32];
-    int     p = 0;
+    int16_t occRow[24];
+    int16_t occColumn[32];
+    int p = 0;
+    int16_t offsetRef;
+    uint8_t occRowScale;
+    uint8_t occColumnScale;
+    uint8_t occRemScale;
 
-    uint8_t occRemScale    = eeData[16] & 0x000F;
-    uint8_t occColumnScale = (eeData[16] & 0x00F0) >> 4;
-    uint8_t occRowScale    = (eeData[16] & 0x0F00) >> 8;
-    int16_t offsetRef      = eeData[17];
-    if (offsetRef > 32767) offsetRef -= 65536;
+    occRemScale = (eeData[16] & 0x000F);
+    occColumnScale = (eeData[16] & 0x00F0) >> 4;
+    occRowScale = (eeData[16] & 0x0F00) >> 8;
+    offsetRef = eeData[17];
+    if (offsetRef > 32767)
+    {
+        offsetRef = offsetRef - 65536;
+    }
 
     for (int i = 0; i < 6; i++)
     {
         p = i * 4;
-        occRow[p+0] =  eeData[18+i] & 0x000F;
-        occRow[p+1] = (eeData[18+i] & 0x00F0) >> 4;
-        occRow[p+2] = (eeData[18+i] & 0x0F00) >> 8;
-        occRow[p+3] = (eeData[18+i] & 0xF000) >> 12;
+        occRow[p + 0] = (eeData[18 + i] & 0x000F);
+        occRow[p + 1] = (eeData[18 + i] & 0x00F0) >> 4;
+        occRow[p + 2] = (eeData[18 + i] & 0x0F00) >> 8;
+        occRow[p + 3] = (eeData[18 + i] & 0xF000) >> 12;
     }
-    for (int i = 0; i < 24; i++) if (occRow[i] > 7) occRow[i] -= 16;
+
+    for (int i = 0; i < 24; i++)
+    {
+        if (occRow[i] > 7)
+        {
+            occRow[i] = occRow[i] - 16;
+        }
+    }
 
     for (int i = 0; i < 8; i++)
     {
         p = i * 4;
-        occColumn[p+0] =  eeData[24+i] & 0x000F;
-        occColumn[p+1] = (eeData[24+i] & 0x00F0) >> 4;
-        occColumn[p+2] = (eeData[24+i] & 0x0F00) >> 8;
-        occColumn[p+3] = (eeData[24+i] & 0xF000) >> 12;
+        occColumn[p + 0] = (eeData[24 + i] & 0x000F);
+        occColumn[p + 1] = (eeData[24 + i] & 0x00F0) >> 4;
+        occColumn[p + 2] = (eeData[24 + i] & 0x0F00) >> 8;
+        occColumn[p + 3] = (eeData[24 + i] & 0xF000) >> 12;
     }
-    for (int i = 0; i < 32; i++) if (occColumn[i] > 7) occColumn[i] -= 16;
+
+    for (int i = 0; i < 32; i++)
+    {
+        if (occColumn[i] > 7)
+        {
+            occColumn[i] = occColumn[i] - 16;
+        }
+    }
 
     for (int i = 0; i < 24; i++)
+    {
         for (int j = 0; j < 32; j++)
         {
             p = 32 * i + j;
-            mlx90640.offset[p] = (eeData[64+p] & 0xFC00) >> 10;
-            if (mlx90640.offset[p] > 31) mlx90640.offset[p] -= 64;
-            mlx90640.offset[p] *= (1 << occRemScale);
-            mlx90640.offset[p]  = offsetRef + (occRow[i] << occRowScale)
-                                 + (occColumn[j] << occColumnScale) + mlx90640.offset[p];
+            mlx90640.offset[p] = (eeData[64 + p] & 0xFC00) >> 10;
+            if (mlx90640.offset[p] > 31)
+            {
+                mlx90640.offset[p] = mlx90640.offset[p] - 64;
+            }
+            mlx90640.offset[p] = mlx90640.offset[p] * (1 << occRemScale);
+            mlx90640.offset[p] = (offsetRef + (occRow[i] << occRowScale) + (occColumn[j] << occColumnScale) + mlx90640.offset[p]);
         }
+    }
 }
 
-static void ExtractKtaPixelParameters(uint16_t *eeData)
+void ExtractKtaPixelParameters(uint16_t *eeData)
 {
-    int8_t  KtaRC[4];
-    uint8_t ktaScale1 = ((eeData[56] & 0x00F0) >> 4) + 8;
-    uint8_t ktaScale2 = eeData[56] & 0x000F;
+    int p = 0;
+    int8_t KtaRC[4];
+    int8_t KtaRoCo;
+    int8_t KtaRoCe;
+    int8_t KtaReCo;
+    int8_t KtaReCe;
+    uint8_t ktaScale1;
+    uint8_t ktaScale2;
+    uint8_t split;
+    float temp;
 
-    int8_t KtaRoCo = (eeData[54] & 0xFF00) >> 8; if (KtaRoCo > 127) KtaRoCo -= 256; KtaRC[0] = KtaRoCo;
-    int8_t KtaReCo = (eeData[54] & 0x00FF);       if (KtaReCo > 127) KtaReCo -= 256; KtaRC[2] = KtaReCo;
-    int8_t KtaRoCe = (eeData[55] & 0xFF00) >> 8; if (KtaRoCe > 127) KtaRoCe -= 256; KtaRC[1] = KtaRoCe;
-    int8_t KtaReCe = (eeData[55] & 0x00FF);       if (KtaReCe > 127) KtaReCe -= 256; KtaRC[3] = KtaReCe;
+    KtaRoCo = (eeData[54] & 0xFF00) >> 8;
+    if (KtaRoCo > 127)
+    {
+        KtaRoCo = KtaRoCo - 256;
+    }
+    KtaRC[0] = KtaRoCo;
+
+    KtaReCo = (eeData[54] & 0x00FF);
+    if (KtaReCo > 127)
+    {
+        KtaReCo = KtaReCo - 256;
+    }
+    KtaRC[2] = KtaReCo;
+
+    KtaRoCe = (eeData[55] & 0xFF00) >> 8;
+    if (KtaRoCe > 127)
+    {
+        KtaRoCe = KtaRoCe - 256;
+    }
+    KtaRC[1] = KtaRoCe;
+
+    KtaReCe = (eeData[55] & 0x00FF);
+    if (KtaReCe > 127)
+    {
+        KtaReCe = KtaReCe - 256;
+    }
+    KtaRC[3] = KtaReCe;
+
+    ktaScale1 = ((eeData[56] & 0x00F0) >> 4) + 8;
+    ktaScale2 = (eeData[56] & 0x000F);
 
     for (int i = 0; i < 24; i++)
+    {
         for (int j = 0; j < 32; j++)
         {
-            int     p     = 32 * i + j;
-            uint8_t split = 2 * (p / 32 - (p / 64) * 2) + p % 2;
-            scratchData[p] = (eeData[64+p] & 0x000E) >> 1;
-            if (scratchData[p] > 3) scratchData[p] -= 8;
-            scratchData[p] = (KtaRC[split] + scratchData[p] * (1 << ktaScale2))
-                             / pow(2.0, ktaScale1) * mlx90640.offset[p];
-        }
+            p = 32 * i + j;
+            split = 2 * (p / 32 - (p / 64) * 2) + p % 2;
+            scratchData[p] = (eeData[64 + p] & 0x000E) >> 1;
+            if (scratchData[p] > 3)
+            {
+                scratchData[p] = scratchData[p] - 8;
+            }
+            scratchData[p] = scratchData[p] * (1 << ktaScale2);
+            scratchData[p] = KtaRC[split] + scratchData[p];
+            scratchData[p] = scratchData[p] / pow(2, (double)ktaScale1);
+            scratchData[p] = scratchData[p] * mlx90640.offset[p];
 
-    float temp = 0;
-    for (int i = 0; i < 768; i++)
-        if (fabs(scratchData[i]) > temp) temp = fabs(scratchData[i]);
+            if (i == 0 && j == 0)
+                temp = fabs(scratchData[p]);
+            else
+            {
+                if (fabs(scratchData[p]) > temp)
+                    temp = fabs(scratchData[p]);
+            }
+        }
+    }
+
+    temp = fabs(scratchData[0]);
+    for (int i = 1; i < 768; i++)
+    {
+        if (fabs(scratchData[i]) > temp)
+        {
+            temp = fabs(scratchData[i]);
+        }
+    }
 
     ktaScale1 = 0;
-    if (temp == 0) temp = 1;
-    while (temp < 64) { temp *= 2; ktaScale1++; }
+    if (temp == 0)
+        temp = 1;
+    while (temp < 64)
+    {
+        temp = temp * 2;
+        ktaScale1 = ktaScale1 + 1;
+    }
 
     for (int i = 0; i < 768; i++)
     {
-        float t = scratchData[i] * pow(2.0, ktaScale1);
-        mlx90640.kta[i] = (int8_t)(t < 0 ? t - 0.5f : t + 0.5f);
+        temp = scratchData[i] * pow(2, (double)ktaScale1);
+        if (temp < 0)
+        {
+            mlx90640.kta[i] = (temp - 0.5);
+        }
+        else
+        {
+            mlx90640.kta[i] = (temp + 0.5);
+        }
     }
+
     mlx90640.ktaScale = ktaScale1;
 }
 
-static void ExtractKvPixelParameters(uint16_t *eeData)
+void ExtractKvPixelParameters(uint16_t *eeData)
 {
-    int8_t  KvT[4];
-    uint8_t kvScale = (eeData[56] & 0x0F00) >> 8;
+    int p = 0;
+    int8_t KvT[4];
+    int8_t KvRoCo;
+    int8_t KvRoCe;
+    int8_t KvReCo;
+    int8_t KvReCe;
+    uint8_t kvScale;
+    uint8_t split;
+    float temp;
 
-    int8_t KvRoCo = (eeData[52] & 0xF000) >> 12; if (KvRoCo > 7) KvRoCo -= 16; KvT[0] = KvRoCo;
-    int8_t KvReCo = (eeData[52] & 0x0F00) >> 8;  if (KvReCo > 7) KvReCo -= 16; KvT[2] = KvReCo;
-    int8_t KvRoCe = (eeData[52] & 0x00F0) >> 4;  if (KvRoCe > 7) KvRoCe -= 16; KvT[1] = KvRoCe;
-    int8_t KvReCe = (eeData[52] & 0x000F);        if (KvReCe > 7) KvReCe -= 16; KvT[3] = KvReCe;
+    KvRoCo = (eeData[52] & 0xF000) >> 12;
+    if (KvRoCo > 7)
+    {
+        KvRoCo = KvRoCo - 16;
+    }
+    KvT[0] = KvRoCo;
+
+    KvReCo = (eeData[52] & 0x0F00) >> 8;
+    if (KvReCo > 7)
+    {
+        KvReCo = KvReCo - 16;
+    }
+    KvT[2] = KvReCo;
+
+    KvRoCe = (eeData[52] & 0x00F0) >> 4;
+    if (KvRoCe > 7)
+    {
+        KvRoCe = KvRoCe - 16;
+    }
+    KvT[1] = KvRoCe;
+
+    KvReCe = (eeData[52] & 0x000F);
+    if (KvReCe > 7)
+    {
+        KvReCe = KvReCe - 16;
+    }
+    KvT[3] = KvReCe;
+
+    kvScale = (eeData[56] & 0x0F00) >> 8;
 
     for (int i = 0; i < 24; i++)
+    {
         for (int j = 0; j < 32; j++)
         {
-            int     p     = 32 * i + j;
-            uint8_t split = 2 * (p / 32 - (p / 64) * 2) + p % 2;
-            scratchData[p] = KvT[split] / pow(2.0, kvScale) * mlx90640.offset[p];
-        }
+            p = 32 * i + j;
+            split = 2 * (p / 32 - (p / 64) * 2) + p % 2;
+            scratchData[p] = KvT[split];
+            scratchData[p] = scratchData[p] / pow(2, (double)kvScale);
+            scratchData[p] = scratchData[p] * mlx90640.offset[p];
 
-    float temp = 0;
-    for (int i = 0; i < 768; i++)
-        if (fabs(scratchData[i]) > temp) temp = fabs(scratchData[i]);
+            if (i == 0 && j == 0)
+                temp = fabs(scratchData[p]);
+            else
+            {
+                if (fabs(scratchData[p]) > temp)
+                    temp = fabs(scratchData[p]);
+            }
+        }
+    }
+
+    temp = fabs(scratchData[0]);
+    for (int i = 1; i < 768; i++)
+    {
+        if (fabs(scratchData[i]) > temp)
+        {
+            temp = fabs(scratchData[i]);
+        }
+    }
 
     kvScale = 0;
-    if (temp == 0) temp = 1;
-    while (temp < 64) { temp *= 2; kvScale++; }
+
+    if (temp == 0)
+        temp = 1;
+    while (temp < 64)
+    {
+        temp = temp * 2;
+        kvScale = kvScale + 1;
+    }
 
     for (int i = 0; i < 768; i++)
     {
-        float t = scratchData[i] * pow(2.0, kvScale);
-        mlx90640.kv[i] = (int8_t)(t < 0 ? t - 0.5f : t + 0.5f);
+        temp = scratchData[i] * pow(2, (double)kvScale);
+        if (temp < 0)
+        {
+            mlx90640.kv[i] = (temp - 0.5);
+        }
+        else
+        {
+            mlx90640.kv[i] = (temp + 0.5);
+        }
     }
+
     mlx90640.kvScale = kvScale;
 }
 
-static void ExtractCILCParameters(uint16_t *eeData)
+void ExtractCILCParameters(uint16_t *eeData)
 {
-    mlx90640.calibrationModeEE = ((eeData[10] & 0x0800) >> 4) ^ 0x80;
-
     float ilChessC[3];
-    ilChessC[0] = eeData[53] & 0x003F; if (ilChessC[0] > 31) ilChessC[0] -= 64; ilChessC[0] /= 16.0f;
-    ilChessC[1] = (eeData[53] & 0x07C0) >> 6; if (ilChessC[1] > 15) ilChessC[1] -= 32; ilChessC[1] /= 2.0f;
-    ilChessC[2] = (eeData[53] & 0xF800) >> 11; if (ilChessC[2] > 15) ilChessC[2] -= 32; ilChessC[2] /= 8.0f;
+    uint8_t calibrationModeEE;
 
+    calibrationModeEE = (eeData[10] & 0x0800) >> 4;
+    calibrationModeEE = calibrationModeEE ^ 0x80;
+
+    ilChessC[0] = (eeData[53] & 0x003F);
+    if (ilChessC[0] > 31)
+    {
+        ilChessC[0] = ilChessC[0] - 64;
+    }
+    ilChessC[0] = ilChessC[0] / 16.0f;
+
+    ilChessC[1] = (eeData[53] & 0x07C0) >> 6;
+    if (ilChessC[1] > 15)
+    {
+        ilChessC[1] = ilChessC[1] - 32;
+    }
+    ilChessC[1] = ilChessC[1] / 2.0f;
+
+    ilChessC[2] = (eeData[53] & 0xF800) >> 11;
+    if (ilChessC[2] > 15)
+    {
+        ilChessC[2] = ilChessC[2] - 32;
+    }
+    ilChessC[2] = ilChessC[2] / 8.0f;
+
+    mlx90640.calibrationModeEE = calibrationModeEE;
     mlx90640.ilChessC[0] = ilChessC[0];
     mlx90640.ilChessC[1] = ilChessC[1];
     mlx90640.ilChessC[2] = ilChessC[2];
 }
 
-static int CheckAdjacentPixels(uint16_t pix1, uint16_t pix2)
+int CheckAdjacentPixels(uint16_t pix1, uint16_t pix2)
 {
-    int d = pix1 - pix2;
-    if ((d > -34 && d < -30) || (d > -2 && d < 2) || (d > 30 && d < 34))
+    int pixPosDif;
+
+    pixPosDif = pix1 - pix2;
+    if (pixPosDif > -34 && pixPosDif < -30)
+    {
         return -6;
+    }
+    if (pixPosDif > -2 && pixPosDif < 2)
+    {
+        return -6;
+    }
+    if (pixPosDif > 30 && pixPosDif < 34)
+    {
+        return -6;
+    }
+
     return 0;
 }
 
-static int ExtractDeviatingPixels(uint16_t *eeData)
+int ExtractDeviatingPixels(uint16_t *eeData)
 {
-    uint16_t brokenPixCnt = 0, outlierPixCnt = 0;
+    uint16_t pixCnt = 0;
+    uint16_t brokenPixCnt = 0;
+    uint16_t outlierPixCnt = 0;
     int warn = 0;
+    int i;
 
-    for (int i = 0; i < 5; i++)
+    for (pixCnt = 0; pixCnt < 5; pixCnt++)
     {
-        mlx90640.brokenPixels[i]  = 0xFFFF;
-        mlx90640.outlierPixels[i] = 0xFFFF;
+        mlx90640.brokenPixels[pixCnt] = 0xFFFF;
+        mlx90640.outlierPixels[pixCnt] = 0xFFFF;
     }
 
-    for (uint16_t pixCnt = 0; pixCnt < 768 && brokenPixCnt < 5 && outlierPixCnt < 5; pixCnt++)
+    pixCnt = 0;
+    while (pixCnt < 768 && brokenPixCnt < 5 && outlierPixCnt < 5)
     {
-        if      (eeData[pixCnt + 64] == 0)              mlx90640.brokenPixels [brokenPixCnt++]  = pixCnt;
-        else if (eeData[pixCnt + 64] & 0x0001)          mlx90640.outlierPixels[outlierPixCnt++] = pixCnt;
+        if (eeData[pixCnt + 64] == 0)
+        {
+            mlx90640.brokenPixels[brokenPixCnt] = pixCnt;
+            brokenPixCnt = brokenPixCnt + 1;
+        }
+        else if ((eeData[pixCnt + 64] & 0x0001) != 0)
+        {
+            mlx90640.outlierPixels[outlierPixCnt] = pixCnt;
+            outlierPixCnt = outlierPixCnt + 1;
+        }
+
+        pixCnt = pixCnt + 1;
     }
 
-    if      (brokenPixCnt > 4)                          warn = -3;
-    else if (outlierPixCnt > 4)                         warn = -4;
-    else if (brokenPixCnt + outlierPixCnt > 4)          warn = -5;
+    if (brokenPixCnt > 4)
+    {
+        warn = -3;
+    }
+    else if (outlierPixCnt > 4)
+    {
+        warn = -4;
+    }
+    else if ((brokenPixCnt + outlierPixCnt) > 4)
+    {
+        warn = -5;
+    }
     else
     {
-        for (uint16_t i = 0; i < brokenPixCnt  && !warn; i++)
-            for (uint16_t j = i+1; j < brokenPixCnt; j++)
-                if ((warn = CheckAdjacentPixels(mlx90640.brokenPixels[i],  mlx90640.brokenPixels[j])))  return warn;
-        for (uint16_t i = 0; i < outlierPixCnt && !warn; i++)
-            for (uint16_t j = i+1; j < outlierPixCnt; j++)
-                if ((warn = CheckAdjacentPixels(mlx90640.outlierPixels[i], mlx90640.outlierPixels[j]))) return warn;
-        for (uint16_t i = 0; i < brokenPixCnt  && !warn; i++)
-            for (uint16_t j = 0; j < outlierPixCnt; j++)
-                if ((warn = CheckAdjacentPixels(mlx90640.brokenPixels[i],  mlx90640.outlierPixels[j]))) return warn;
+        for (pixCnt = 0; pixCnt < brokenPixCnt; pixCnt++)
+        {
+            for (i = pixCnt + 1; i < brokenPixCnt; i++)
+            {
+                warn = CheckAdjacentPixels(mlx90640.brokenPixels[pixCnt], mlx90640.brokenPixels[i]);
+                if (warn != 0)
+                {
+                    return warn;
+                }
+            }
+        }
+
+        for (pixCnt = 0; pixCnt < outlierPixCnt; pixCnt++)
+        {
+            for (i = pixCnt + 1; i < outlierPixCnt; i++)
+            {
+                warn = CheckAdjacentPixels(mlx90640.outlierPixels[pixCnt], mlx90640.outlierPixels[i]);
+                if (warn != 0)
+                {
+                    return warn;
+                }
+            }
+        }
+
+        for (pixCnt = 0; pixCnt < brokenPixCnt; pixCnt++)
+        {
+            for (i = 0; i < outlierPixCnt; i++)
+            {
+                warn = CheckAdjacentPixels(mlx90640.brokenPixels[pixCnt], mlx90640.outlierPixels[i]);
+                if (warn != 0)
+                {
+                    return warn;
+                }
+            }
+        }
     }
+
     return warn;
 }
 
 int MLX90640_ExtractParameters(uint16_t *eeData)
 {
+    int error = 0;
     ExtractVDDParameters(eeData);
     ExtractPTATParameters(eeData);
     ExtractGainParameters(eeData);
@@ -498,23 +912,23 @@ int MLX90640_ExtractParameters(uint16_t *eeData)
     ExtractKtaPixelParameters(eeData);
     ExtractKvPixelParameters(eeData);
     ExtractCILCParameters(eeData);
-    return ExtractDeviatingPixels(eeData);
+    error = ExtractDeviatingPixels(eeData);
+
+    return error;
 }
 
-/* ============================================================================
- *  Frame acquisition
- * ========================================================================== */
-
-int MLX90640_GetFrameData(void)
+int MLX90640_GetFrameData(I2C_HandleTypeDef *hi2c1)
 {
-    uint16_t statusRegister, controlRegister1;
-    uint8_t  cnt = 0;
+    uint16_t dataReady = 1;
+    uint16_t controlRegister1;
+    uint16_t statusRegister;
+    int error = 1;
+    uint8_t cnt = 0;
 
-    /* Wait for new data */
-    uint16_t dataReady = 0;
-    while (!dataReady)
+    dataReady = 0;
+    while (dataReady == 0)
     {
-        if (MLX_ReadReg(0x8000, &statusRegister) != HAL_OK)
+        if (MLX_ReadReg(hi2c1, 0x8000, &statusRegister) != HAL_OK)
         {
             HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
             break;
@@ -523,234 +937,308 @@ int MLX90640_GetFrameData(void)
         HAL_Delay(5);
     }
 
-    while (dataReady && cnt < 5)
+    while (dataReady != 0 && cnt < 5)
     {
-        if (MLX_WriteReg(0x8000, 0x0030) != HAL_OK)
+
+        if (MLX_WriteReg(hi2c1, 0x8000, 0x0030) != HAL_OK)
         {
+
             HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
             break;
         }
-        if (MLX_ReadBlock(0x0400, 832, frameData) != HAL_OK)
+
+        if (MLX_ReadBlock(hi2c1, 0x0400, 832, frameData) != HAL_OK)
         {
             HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
             break;
         }
-        if (MLX_ReadReg(0x8000, &statusRegister) != HAL_OK)
+
+        if (MLX_ReadReg(hi2c1, 0x8000, &statusRegister) != HAL_OK)
         {
             HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
             break;
         }
         dataReady = statusRegister & 0x0008;
-        cnt++;
+        cnt = cnt + 1;
     }
 
-    if (cnt > 4) return -8;
+    if (cnt > 4)
+    {
+        return -8;
+    }
 
-    if (MLX_ReadReg(0x800D, &controlRegister1) != HAL_OK)
+    if (MLX_ReadReg(hi2c1, 0x800D, &controlRegister1) != HAL_OK)
+    {
         HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
-
+    }
     frameData[832] = controlRegister1;
     frameData[833] = statusRegister & 0x0001;
+
     return frameData[833];
 }
 
-float MLX90640_GetVdd(void)
+float MLX90640_GetVdd()
 {
-    float vdd = frameData[810];
-    if (vdd > 32767) vdd -= 65536;
+    float vdd;
+    float resolutionCorrection;
 
-    int   resolutionRAM = (frameData[832] & 0x0C00) >> 10;
-    float resCorr       = pow(2.0, mlx90640.resolutionEE) / pow(2.0, resolutionRAM);
-    return (resCorr * vdd - mlx90640.vdd25) / mlx90640.kVdd + 3.3f;
+    int resolutionRAM;
+
+    vdd = frameData[810];
+    if (vdd > 32767)
+    {
+        vdd = vdd - 65536;
+    }
+    resolutionRAM = (frameData[832] & 0x0C00) >> 10;
+    resolutionCorrection = pow(2, (double)mlx90640.resolutionEE) / pow(2, (double)resolutionRAM);
+    vdd = (resolutionCorrection * vdd - mlx90640.vdd25) / mlx90640.kVdd + 3.3;
+
+    return vdd;
 }
 
-float MLX90640_GetTa(void)
+float MLX90640_GetTa()
 {
-    float vdd  = MLX90640_GetVdd();
-    float ptat = frameData[800]; if (ptat > 32767) ptat -= 65536;
-    float ptatArt = frameData[768]; if (ptatArt > 32767) ptatArt -= 65536;
+    float ptat;
+    float ptatArt;
+    float vdd;
+    float ta;
 
-    ptatArt = (ptat / (ptat * mlx90640.alphaPTAT + ptatArt)) * pow(2.0, 18);
-    return (ptatArt / (1 + mlx90640.KvPTAT * (vdd - 3.3f)) - mlx90640.vPTAT25)
-           / mlx90640.KtPTAT + 25.0f;
+    vdd = MLX90640_GetVdd();
+
+    ptat = frameData[800];
+    if (ptat > 32767)
+    {
+        ptat = ptat - 65536;
+    }
+
+    ptatArt = frameData[768];
+    if (ptatArt > 32767)
+    {
+        ptatArt = ptatArt - 65536;
+    }
+    ptatArt = (ptat / (ptat * mlx90640.alphaPTAT + ptatArt)) * pow(2, (double)18);
+
+    ta = (ptatArt / (1 + mlx90640.KvPTAT * (vdd - 3.3)) - mlx90640.vPTAT25);
+    ta = ta / mlx90640.KtPTAT + 25;
+
+    return ta;
 }
 
 void MLX90640_CalculateTo(float emissivity, float tr, float *result)
 {
-    float vdd = MLX90640_GetVdd();
-    float ta  = MLX90640_GetTa();
-
-    float ta4 = (ta + 273.15f); ta4 = ta4*ta4; ta4 = ta4*ta4;
-    float tr4 = (tr + 273.15f); tr4 = tr4*tr4; tr4 = tr4*tr4;
-    float taTr = tr4 - (tr4 - ta4) / emissivity;
-
-    float ktaScale   = pow(2.0, mlx90640.ktaScale);
-    float kvScale    = pow(2.0, mlx90640.kvScale);
-    float alphaScale = pow(2.0, mlx90640.alphaScale);
-
+    float vdd;
+    float ta;
+    float ta4;
+    float tr4;
+    float taTr;
+    float gain;
+    float irDataCP[2];
+    float irData;
+    float alphaCompensated;
+    uint8_t mode;
+    int8_t ilPattern;
+    int8_t chessPattern;
+    int8_t pattern;
+    int8_t conversionPattern;
+    float Sx;
+    float To;
     float alphaCorrR[4];
-    alphaCorrR[0] = 1.0f / (1 + mlx90640.ksTo[0] * 40);
-    alphaCorrR[1] = 1.0f;
-    alphaCorrR[2] = 1 + mlx90640.ksTo[1] * mlx90640.ct[2];
+    int8_t range;
+    uint16_t subPage;
+    float ktaScale;
+    float kvScale;
+    float alphaScale;
+    float kta;
+    float kv;
+
+    subPage = frameData[833];
+    vdd = MLX90640_GetVdd();
+    ta = MLX90640_GetTa();
+
+    ta4 = (ta + 273.15);
+    ta4 = ta4 * ta4;
+    ta4 = ta4 * ta4;
+    tr4 = (tr + 273.15);
+    tr4 = tr4 * tr4;
+    tr4 = tr4 * tr4;
+    taTr = tr4 - (tr4 - ta4) / emissivity;
+
+    ktaScale = pow(2, (double)mlx90640.ktaScale);
+    kvScale = pow(2, (double)mlx90640.kvScale);
+    alphaScale = pow(2, (double)mlx90640.alphaScale);
+
+    alphaCorrR[0] = 1 / (1 + mlx90640.ksTo[0] * 40);
+    alphaCorrR[1] = 1;
+    alphaCorrR[2] = (1 + mlx90640.ksTo[1] * mlx90640.ct[2]);
     alphaCorrR[3] = alphaCorrR[2] * (1 + mlx90640.ksTo[2] * (mlx90640.ct[3] - mlx90640.ct[2]));
 
-    float gain = frameData[778]; if (gain > 32767) gain -= 65536;
+    //------------------------- Gain calculation -----------------------------------
+    gain = frameData[778];
+    if (gain > 32767)
+    {
+        gain = gain - 65536;
+    }
+
     gain = mlx90640.gainEE / gain;
 
-    uint8_t mode    = (frameData[832] & 0x1000) >> 5;
-    uint16_t subPage = frameData[833];
+    //------------------------- To calculation -------------------------------------
+    mode = (frameData[832] & 0x1000) >> 5;
 
-    float irDataCP[2];
-    irDataCP[0] = frameData[776]; if (irDataCP[0] > 32767) irDataCP[0] -= 65536; irDataCP[0] *= gain;
-    irDataCP[1] = frameData[808]; if (irDataCP[1] > 32767) irDataCP[1] -= 65536; irDataCP[1] *= gain;
-
-    irDataCP[0] -= mlx90640.cpOffset[0] * (1 + mlx90640.cpKta*(ta-25)) * (1 + mlx90640.cpKv*(vdd-3.3f));
-    if (mode == mlx90640.calibrationModeEE)
-        irDataCP[1] -= mlx90640.cpOffset[1] * (1 + mlx90640.cpKta*(ta-25)) * (1 + mlx90640.cpKv*(vdd-3.3f));
-    else
-        irDataCP[1] -= (mlx90640.cpOffset[1] + mlx90640.ilChessC[0]) * (1 + mlx90640.cpKta*(ta-25)) * (1 + mlx90640.cpKv*(vdd-3.3f));
-
-    for (int px = 0; px < 768; px++)
+    irDataCP[0] = frameData[776];
+    irDataCP[1] = frameData[808];
+    for (int i = 0; i < 2; i++)
     {
-        int8_t ilPattern       = px / 32 - (px / 64) * 2;
-        int8_t chessPattern    = ilPattern ^ (px - (px / 2) * 2);
-        int8_t convPattern     = ((px+2)/4 - (px+3)/4 + (px+1)/4 - px/4) * (1 - 2*ilPattern);
-        int8_t pattern         = (mode == 0) ? ilPattern : chessPattern;
+        if (irDataCP[i] > 32767)
+        {
+            irDataCP[i] = irDataCP[i] - 65536;
+        }
+        irDataCP[i] = irDataCP[i] * gain;
+    }
+    irDataCP[0] = irDataCP[0] - mlx90640.cpOffset[0] * (1 + mlx90640.cpKta * (ta - 25)) * (1 + mlx90640.cpKv * (vdd - 3.3));
+    if (mode == mlx90640.calibrationModeEE)
+    {
+        irDataCP[1] = irDataCP[1] - mlx90640.cpOffset[1] * (1 + mlx90640.cpKta * (ta - 25)) * (1 + mlx90640.cpKv * (vdd - 3.3));
+    }
+    else
+    {
+        irDataCP[1] = irDataCP[1] - (mlx90640.cpOffset[1] + mlx90640.ilChessC[0]) * (1 + mlx90640.cpKta * (ta - 25)) * (1 + mlx90640.cpKv * (vdd - 3.3));
+    }
 
-        if (pattern != (int8_t)frameData[833]) continue;
+    for (int pixelNumber = 0; pixelNumber < 768; pixelNumber++)
+    {
+        ilPattern = pixelNumber / 32 - (pixelNumber / 64) * 2;
+        chessPattern = ilPattern ^ (pixelNumber - (pixelNumber / 2) * 2);
+        conversionPattern = ((pixelNumber + 2) / 4 - (pixelNumber + 3) / 4 + (pixelNumber + 1) / 4 - pixelNumber / 4) * (1 - 2 * ilPattern);
 
-        float irData = frameData[px]; if (irData > 32767) irData -= 65536;
-        irData *= gain;
+        if (mode == 0)
+        {
+            pattern = ilPattern;
+        }
+        else
+        {
+            pattern = chessPattern;
+        }
 
-        float kta = mlx90640.kta[px] / ktaScale;
-        float kv  = mlx90640.kv[px]  / kvScale;
-        irData -= mlx90640.offset[px] * (1 + kta*(ta-25)) * (1 + kv*(vdd-3.3f));
+        if (pattern == frameData[833])
+        {
+            irData = frameData[pixelNumber];
+            if (irData > 32767)
+            {
+                irData = irData - 65536;
+            }
+            irData = irData * gain;
 
-        if (mode != mlx90640.calibrationModeEE)
-            irData += mlx90640.ilChessC[2]*(2*ilPattern-1) - mlx90640.ilChessC[1]*convPattern;
+            kta = mlx90640.kta[pixelNumber] / ktaScale;
+            kv = mlx90640.kv[pixelNumber] / kvScale;
+            irData = irData - mlx90640.offset[pixelNumber] * (1 + kta * (ta - 25)) * (1 + kv * (vdd - 3.3));
 
-        irData -= mlx90640.tgc * irDataCP[subPage];
-        irData /= emissivity;
+            if (mode != mlx90640.calibrationModeEE)
+            {
+                irData = irData + mlx90640.ilChessC[2] * (2 * ilPattern - 1) - mlx90640.ilChessC[1] * conversionPattern;
+            }
 
-        float alphaComp = SCALEALPHA * alphaScale / mlx90640.alpha[px];
-        alphaComp *= (1 + mlx90640.KsTa*(ta-25));
+            irData = irData - mlx90640.tgc * irDataCP[subPage];
+            irData = irData / emissivity;
 
-        float Sx = alphaComp*alphaComp*alphaComp*(irData + alphaComp*taTr);
-        Sx = sqrt(sqrt(Sx)) * mlx90640.ksTo[1];
+            alphaCompensated = SCALEALPHA * alphaScale / mlx90640.alpha[pixelNumber];
+            alphaCompensated = alphaCompensated * (1 + mlx90640.KsTa * (ta - 25));
 
-        float To = sqrt(sqrt(irData / (alphaComp*(1 - mlx90640.ksTo[1]*273.15f) + Sx) + taTr)) - 273.15f;
+            Sx = alphaCompensated * alphaCompensated * alphaCompensated * (irData + alphaCompensated * taTr);
+            Sx = sqrt(sqrt(Sx)) * mlx90640.ksTo[1];
 
-        int8_t range;
-        if      (To < mlx90640.ct[1]) range = 0;
-        else if (To < mlx90640.ct[2]) range = 1;
-        else if (To < mlx90640.ct[3]) range = 2;
-        else                           range = 3;
+            To = sqrt(sqrt(irData / (alphaCompensated * (1 - mlx90640.ksTo[1] * 273.15) + Sx) + taTr)) - 273.15;
 
-        To = sqrt(sqrt(irData / (alphaComp * alphaCorrR[range] *
-             (1 + mlx90640.ksTo[range]*(To - mlx90640.ct[range]))) + taTr)) - 273.15f;
+            if (To < mlx90640.ct[1])
+            {
+                range = 0;
+            }
+            else if (To < mlx90640.ct[2])
+            {
+                range = 1;
+            }
+            else if (To < mlx90640.ct[3])
+            {
+                range = 2;
+            }
+            else
+            {
+                range = 3;
+            }
 
-        result[px] = To;
+            To = sqrt(sqrt(irData / (alphaCompensated * alphaCorrR[range] * (1 + mlx90640.ksTo[range] * (To - mlx90640.ct[range]))) + taTr)) - 273.15;
+
+            result[pixelNumber] = To;
+        }
     }
 }
 
-int MLX90640_getFrame(void)
+/*!
+ *    @brief  Read 2 pages, calculate temperatures and place into framebuf
+ *    @param  framebuf 24*32 floating point memory buffer
+ *    @return 0 on success
+ */
+int MLX90640_getFrame(I2C_HandleTypeDef *hi2c1, uint16_t *destBuf)
 {
-    float emissivity = 0.95f;
-    float tr = 23.15f;
-    int   status;
+    float emissivity = 0.95;
+    float tr = 23.15;
+    float ta = 0.0;
+    int status;
 
     for (uint8_t page = 0; page < 2; page++)
     {
-        status = MLX90640_GetFrameData();
-        if (status < 0) return status;
+        status = MLX90640_GetFrameData(hi2c1);
+        if (status < 0)
+            return status;
 
-        float ta = MLX90640_GetTa();
+        ta = MLX90640_GetTa();
         tr = ta - OPENAIR_TA_SHIFT;
         MLX90640_CalculateTo(emissivity, tr, tempBuf);
     }
 
+    /* Convert float32 -> float16 and store */
     for (int i = 0; i < 24 * 32; i++)
+    {
         frameBuf[i] = f32_to_f16(tempBuf[i]);
+    }
 
+    memcpy(destBuf, frameBuf, sizeof(frameBuf));
     return 0;
 }
 
-int MLX90640_getRawFrame(void)
-{
-    int status;
-    for (uint8_t page = 0; page < 2; page++)
-    {
-        status = MLX90640_GetFrameData();
-        if (status < 0) return status;
-    }
-    return 0;
-}
+//int MLX90640_getRawFrame()
+//{
+//    int status;
+//
+//    for (uint8_t page = 0; page < 2; page++)
+//    {
+//        status = MLX90640_GetFrameData();
+//
+//        if (status < 0)
+//        {
+//            return status;
+//        }
+//    }
+//
+//    return 0;
+//}
 
-/* ============================================================================
- *  Sensor initialisation
- * ========================================================================== */
-
-void MLX90640_InitSensor(uint8_t debug)
-{
-    MLX_ReadBlock(0x2400, 832, eepromData);
-
-    if (debug) HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
-
-    uint16_t cr1;
-    if (MLX_ReadReg(0x800D, &cr1) != HAL_OK)
-        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
-
-    /* Chess mode */
-    if (MLX_WriteReg(0x800D, cr1 | 0x1000) != HAL_OK)
-        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
-
-    MLX_ReadReg(0x800D, &cr1);
-    if (debug && ((cr1 & 0x1000) >> 12))
-        HAL_UART_Transmit(&huart2, ChessMsg, sizeof(ChessMsg), 10000);
-    if (debug) HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
-
-    /* 18-bit resolution */
-    if (debug) HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
-    MLX_ReadReg(0x800D, &cr1);
-    uint16_t val = (cr1 & 0xF3FF) | ((2u & 0x03) << 10);   // resolution = 2 → 18-bit
-    if (MLX_WriteReg(0x800D, val) != HAL_OK)
-        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
-    if (debug) HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
-
-    /* 4 Hz frame rate */
-    if (debug) HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
-    MLX_ReadReg(0x800D, &cr1);
-    val = (cr1 & 0xFC7F) | ((4u & 0x07) << 7);             // refreshRate = 4 → 4 Hz
-    if (MLX_WriteReg(0x800D, val) != HAL_OK)
-        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
-
-    if (debug)
-    {
-        MLX_ReadReg(0x800D, &cr1);
-        int rate = (cr1 & 0x0380) >> 7;
-        if (rate == 2) { uint8_t m[] = "RATE 2 Hz\n"; HAL_UART_Transmit(&huart2, m, sizeof(m), 10000); }
-        if (rate == 4) { uint8_t m[] = "RATE 4 Hz\n"; HAL_UART_Transmit(&huart2, m, sizeof(m), 10000); }
-        HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
-    }
-}
-
-/* ============================================================================
- *  Diagnostics
- * ========================================================================== */
-
-void MLX90640_diagnostic_test(void)
+void MLX90640_diagnostic_test(I2C_HandleTypeDef *hi2c1)
 {
     char buf[100];
     uint16_t testValue;
+    HAL_StatusTypeDef status;
 
     HAL_Delay(100);
     HAL_UART_Transmit(&huart2, StartMSG, sizeof(StartMSG), 10000);
-
-    for (uint8_t i = 1; i < 128; i++)
+    uint8_t i = 0, ret;
+    for (i = 1; i < 128; i++)
     {
-        if (HAL_I2C_IsDeviceReady(thermal_i2c, (uint16_t)(i << 1), 3, 5) != HAL_OK)
+        ret = HAL_I2C_IsDeviceReady(hi2c1, (uint16_t)(i << 1), 3, 5);
+        if (ret != HAL_OK) /* No ACK Received At That Address */
+        {
             HAL_UART_Transmit(&huart2, Space, sizeof(Space), 10000);
-        else
+        }
+        else if (ret == HAL_OK)
         {
             sprintf(Buffer, "0x%X", i);
             HAL_UART_Transmit(&huart2, Buffer, sizeof(Buffer), 10000);
@@ -759,30 +1247,37 @@ void MLX90640_diagnostic_test(void)
     HAL_UART_Transmit(&huart2, EndMSG, sizeof(EndMSG), 10000);
     HAL_Delay(100);
 
+    // try to read serial number from sensor
     uint16_t serialNo;
-    MLX_ReadReg(0x2407, &serialNo);
+    MLX_ReadReg(hi2c1, 0x2407, &serialNo);
+
+    HAL_Delay(100);
     char serialNoBuf[6];
     itoa(serialNo, serialNoBuf, 16);
-    serialNoBuf[5] = '\n';
-    HAL_UART_Transmit(&huart2, (uint8_t *)serialNoBuf, sizeof(serialNoBuf), 10000);
+    serialNoBuf[5] = "\n";
+    HAL_UART_Transmit(&huart2, serialNoBuf, sizeof(serialNoBuf), 10000);
 
-    HAL_StatusTypeDef st;
-    st = MLX_ReadReg(0x2400, &testValue);
-    sprintf(buf, "EEPROM[0x2400]: 0x%04X, Status: %d\n", testValue, st);
+    // Test 1: Read a known EEPROM register
+    status = MLX_ReadReg(hi2c1, 0x2400, &testValue);
+    sprintf(buf, "EEPROM[0x2400]: 0x%04X, Status: %d\n", testValue, status);
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, strlen(buf), 10000);
 
-    st = MLX_ReadReg(0x8000, &testValue);
-    sprintf(buf, "Status[0x8000]: 0x%04X, Status: %d\n", testValue, st);
+    // Test 2: Read status register
+    status = MLX_ReadReg(hi2c1, 0x8000, &testValue);
+    sprintf(buf, "Status[0x8000]: 0x%04X, Status: %d\n", testValue, status);
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, strlen(buf), 10000);
 
-    st = MLX_ReadReg(0x0400, &testValue);
-    sprintf(buf, "Frame[0x0400]: 0x%04X, Status: %d\n", testValue, st);
+    // Test 3: Read first frame pixel
+    status = MLX_ReadReg(hi2c1, 0x0400, &testValue);
+    sprintf(buf, "Frame[0x0400]: 0x%04X, Status: %d\n", testValue, status);
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, strlen(buf), 10000);
 
+    // Test 4: Try reading 10 words with block read
     uint16_t testBlock[10];
-    st = MLX_ReadBlock(0x2400, 10, testBlock);
-    sprintf(buf, "Block read status: %d\n", st);
+    status = MLX_ReadBlock(hi2c1, 0x2400, 10, testBlock);
+    sprintf(buf, "Block read status: %d\n", status);
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, strlen(buf), 10000);
+
     for (int i = 0; i < 10; i++)
     {
         sprintf(buf, "  [%d]: 0x%04X\n", i, testBlock[i]);
@@ -790,12 +1285,111 @@ void MLX90640_diagnostic_test(void)
     }
 }
 
-void MLX90640_Dump_EEPROM(void)
+/**
+ * Will print the contents of the EEPROM to UART. Use for debugging.
+ */
+void MLX90640_Dump_EEPROM()
 {
     char regBuf[32] = {0};
     for (int i = 0; i < 832; i++)
     {
         sprintf(regBuf, "0x%04X\n", eepromData[i]);
         HAL_UART_Transmit(&huart2, regBuf, sizeof(regBuf), 10000);
+    }
+}
+
+/**
+ * Performs sensor initialization. Reads required information from EEPROM, and then
+ * sets various settings (chess mode for readout pattern, 18-bit resolution, 4Hz refresh rate
+ */
+void MLX90640_InitSensor(I2C_HandleTypeDef *hi2c1, uint8_t debug)
+{
+    MLX_ReadBlock(hi2c1, 0x2400, 832, eepromData);
+    // set to chess mode
+    if (debug)
+        HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
+    uint16_t controlRegister1;
+
+    HAL_StatusTypeDef status = MLX_ReadReg(hi2c1, 0x800D, &controlRegister1);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
+    }
+
+    uint16_t value = (controlRegister1 | 0x1000);
+    status = MLX_WriteReg(hi2c1, 0x800D, value);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
+    }
+
+    // verify mode set
+    status = MLX_ReadReg(hi2c1, 0x800D, &controlRegister1);
+    int modeRAM = (controlRegister1 & 0x1000) >> 12;
+    if (modeRAM == 1 && debug)
+    {
+        HAL_UART_Transmit(&huart2, ChessMsg, sizeof(ChessMsg), 10000);
+    }
+    if (debug)
+        HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
+
+    // set resolution
+    if (debug)
+        HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
+    status = MLX_ReadReg(hi2c1, 0x800D, &controlRegister1);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
+    }
+
+    uint8_t resolution = 2; // 18-bit
+    value = (resolution & 0x03) << 10;
+    value = (controlRegister1 & 0xF3FF) | value;
+    status = MLX_WriteReg(hi2c1, 0x800D, value);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
+    }
+    if (debug)
+        HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
+
+    // set frame rate
+    if (debug)
+        HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
+    uint8_t refreshRate = 2; // 4Hz
+    value = (refreshRate & 0x07) << 7;
+
+    status = MLX_ReadReg(hi2c1, 0x800D, &controlRegister1);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
+    }
+    value = (controlRegister1 & 0xFC7F) | value;
+    status = MLX_WriteReg(hi2c1, 0x800D, value);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
+    }
+
+    status = MLX_ReadReg(hi2c1, 0x800D, &controlRegister1);
+    if (status != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
+    }
+    // verify rate
+    int rate = (controlRegister1 & 0x0380) >> 7;
+    if (debug)
+    {
+        if (rate == 2)
+        {
+            uint8_t tempbuftwo[] = "RATE 2 Hz\n";
+            HAL_UART_Transmit(&huart2, tempbuftwo, sizeof(tempbuftwo), 10000);
+        }
+        else if (rate == 4)
+        {
+            uint8_t tempbuftwo[] = "RATE 4 Hz\n";
+            HAL_UART_Transmit(&huart2, tempbuftwo, sizeof(tempbuftwo), 10000);
+        }
+        HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
     }
 }
