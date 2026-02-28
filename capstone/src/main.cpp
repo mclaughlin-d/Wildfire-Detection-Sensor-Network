@@ -17,7 +17,7 @@ void OnTxTimeout(void);
 #define TX_TIMEOUT_VALUE 3000
 
 static RadioEvents_t RadioEvents;
-static uint8_t TxdBuffer[214];
+static uint8_t TxdBuffer[215];
 static bool txBusy = false;
 
 void setup()
@@ -67,30 +67,30 @@ void loop()
   uint8_t len = 0;
   memset(TxdBuffer, 0, sizeof(TxdBuffer));
 
-  while (!Serial1.available())
-  {
-    delay(1);
-  }
+  // while (!Serial1.available())
+  // {
+  //   delay(1);
+  // }
 
-  if (Serial)
-    Serial.println("Step 7: Data detected on Serial1!");
+  // if (Serial)
+  //   Serial.println("Step 7: Data detected on Serial1!");
 
-  uint32_t timeout = millis() + 50;
+  uint32_t timeout = millis() + 100;
   while (millis() < timeout && len < sizeof(TxdBuffer) - 1)
   {
     if (Serial1.available())
     {
       char c = Serial1.read();
-      if (c == '\n')
-        break;
-      if (c == '\r')
-        continue;
+      // if (c == '\n')
+      //   break;
+      // if (c == '\r')
+      //   continue;
       TxdBuffer[len++] = (uint8_t)c;
-      timeout = millis() + 50;
+      timeout = millis() + 100;
     }
   }
 
-  if (Serial)
+  if (Serial && len > 0)
   {
     Serial.printf("Step 8: Read %d bytes: ", len);
     for (int i = 0; i < len; i++)

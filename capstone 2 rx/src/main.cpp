@@ -18,7 +18,7 @@ void OnRxError(void);
 #define RX_TIMEOUT_VALUE 3000
 
 static RadioEvents_t RadioEvents;
-static uint8_t RcvBuffer[214];
+static uint8_t RcvBuffer[215];
 
 void setup()
 {
@@ -69,8 +69,8 @@ void loop()
 
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
 {
-  if (Serial)
-    Serial.printf("Step 8: LoRa packet received! %d bytes, RSSI=%d dBm, SNR=%d\n", size, rssi, snr);
+  // if (Serial)
+  //   Serial.printf("Step 8: LoRa packet received! %d bytes, RSSI=%d dBm, SNR=%d\n", size, rssi, snr);
 
   memcpy(RcvBuffer, payload, size);
   RcvBuffer[size] = '\0';
@@ -80,14 +80,17 @@ void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr)
   {
     Serial.print("Data: ");
     for (int i = 0; i < size; i++)
-      Serial.print((char)RcvBuffer[i]);
-    Serial.println();
+    {
+      // Serial.print("0x");
+      Serial.printf("%02X", RcvBuffer[i]);
+    }
+    Serial.print("\n");
   }
 
   // Forward to STM32 over UART
   Serial1.write(RcvBuffer, size);
   Serial1.print("\r\n");
-  Serial.println("Step 9: Forwarded to STM32 over Serial1");
+  // Serial.println("Step 9: Forwarded to STM32 over Serial1");
 
   Radio.Rx(0); // re-enter continuous receive mode
 }
