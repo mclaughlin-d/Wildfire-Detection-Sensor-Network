@@ -60,8 +60,8 @@ all: main-build
 main-build: sensor_integration.elf secondary-outputs
 
 # Tool invocations
-sensor_integration.elf sensor_integration.map: $(OBJS) $(USER_OBJS) C:\Users\spanm\STM32CubeIDE\capstone\ project\sensor_integration\STM32L476RGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "sensor_integration.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\spanm\STM32CubeIDE\capstone project\sensor_integration\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="sensor_integration.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+sensor_integration.elf sensor_integration.map: $(OBJS) $(USER_OBJS) C:\Users\User\Documents\Capstone\EECE4792-CapstoneProject\firmware\sensor_integration\STM32L476RGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "sensor_integration.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\User\Documents\Capstone\EECE4792-CapstoneProject\firmware\sensor_integration\STM32L476RGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="sensor_integration.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
