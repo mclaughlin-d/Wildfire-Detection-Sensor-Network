@@ -1676,14 +1676,13 @@ int main(void)
   HAL_UART_Receive_DMA(GPS_UART, gpsBuff, 255);
 
   // scans for MLX90640 i2c address and runs some basic tests
-   MLX90640_diagnostic_test();
 
   MLX90640_InitSensor(1);
 
   // extract calibration parameters from EEPROM
   MLX90640_ExtractParameters(eepromData);
 
-  MLX90640_Dump_EEPROM();
+//  MLX90640_Dump_EEPROM();
 
   MLX90640_diagnostic_test();
 
@@ -1694,7 +1693,7 @@ int main(void)
   while (1)
   {
 
-	  MLX90640_getFrame(frameDataBuf);
+	  MLX90640_getFrame();
 
 	  for (int i = 0; i < 8; i++) {
 	  // Turn Fans On
@@ -1776,9 +1775,13 @@ int main(void)
 
 
 		  payload.row = i;
-		  memcpy(payload.pixels, (frameDataBuf + i*32), 32*2*3);
+		  memcpy(payload.pixels, (frameBuf + i*32), 32*2*3);
 
-		  HAL_UART_Transmit(&huart5, (uint8_t *)&payload, sizeof(payload), 10000);
+		  HAL_StatusTypeDef uartstatus = HAL_UART_Transmit(&huart5, (uint8_t *)&payload, sizeof(payload), 10000);
+		  if (uartstatus != HAL_OK) {
+			  char loraerrorbuf[] = "Error transmitting to lora module!\n";
+			  HAL_UART_Transmit(&huart2, loraerrorbuf, sizeof(loraerrorbuf), 10000);
+		  }
 		  HAL_Delay(200);
 	  }
 
@@ -1806,24 +1809,26 @@ int main(void)
 
 	  	}
 
-	  HAL_Delay(5000);
+	  	 HAL_Delay(5000);
+
+
 
 	  // Move servo position continuously between 0, 90, 180 degrees
 	  	// 0 degrees
-		__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_0_DEG);
-		HAL_Delay(SERVO_DELAY_MS);
+//		__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_0_DEG);
+//		HAL_Delay(SERVO_DELAY_MS);
 
 		// 90 degrees
-		__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_90_DEG);
-		HAL_Delay(SERVO_DELAY_MS);
+//		__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_90_DEG);
+//		HAL_Delay(SERVO_DELAY_MS);
 
 		// 180 degrees
-		__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_180_DEG);
-		HAL_Delay(SERVO_DELAY_MS);
+//		__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_180_DEG);
+//		HAL_Delay(SERVO_DELAY_MS);
 
 		// Back to 0 degrees
-		__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_0_DEG);
-		HAL_Delay(SERVO_DELAY_MS);
+//		__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_0_DEG);
+//		HAL_Delay(SERVO_DELAY_MS);
 
 	// Turn Fans Off
 //		__HAL_TIM_SET_COMPARE(FAN_TIMER, FAN1_CHANNEL, FAN_OFF);
