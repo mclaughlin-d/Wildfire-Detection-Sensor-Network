@@ -25,3 +25,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-ek-mukta), sans-serif;
 }
+
+input[type="checkbox"] {
+  accent-color: var(--secondary-color);
+}

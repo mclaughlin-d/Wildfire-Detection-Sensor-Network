@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "react-gauge-component": "^2.0.26",
+    "react-zoom-pan-pinch": "^3.7.0"
+  }
+}
