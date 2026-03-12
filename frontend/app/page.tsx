@@ -1,65 +1,230 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState } from "react";
+
+//home page tiles
+import DashboardSelectionPanel from "@/components/dashboard/DashboardSelectionPanel";
+import WindDirection from "@/components/dashboard/WindDirection";
+import TemperatureGraph from "@/components/dashboard/TemperatureGraph";
+import AverageTemperature from "@/components/dashboard/AverageTemperature";
+import FlaggedSensors from "@/components/dashboard/FlaggedSensors";
+import HumidityGraph from "@/components/dashboard/HumidityGraph";
+import AverageHumidity from "@/components/dashboard/AverageHumidity";
+import {
+  fetchModuleReadings,
+  fetchModules,
+  type ModuleReading,
+} from "@/lib/api";
+
+const celsiusToFahrenheit = (celsius: number) => (celsius * 9) / 5 + 32;
+
+const formatTimeLabel = (timestamp: string) =>
+  new Date(timestamp).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 
 export default function Home() {
+  const [time, setTime] = useState<string>("");
+  const [date, setDate] = useState<string>("");
+  const [temperatureValue, setTemperatureValue] = useState<number>(72);
+  const [windValue, setWindValue] = useState<number>(167);
+  const [humidityValue, setHumidityValue] = useState<number>(70);
+  const [hasFlaggedSensors, setHasFlaggedSensors] = useState<boolean>(false);
+  const [hourlyLabels, setHourlyLabels] = useState<string[]>([]);
+  const [temperatureSeries, setTemperatureSeries] = useState<number[]>([]);
+  const [humiditySeries, setHumiditySeries] = useState<number[]>([]);
+
+  //initialize visibleComponents from local storage (so it persists among pages)
+  const [visibleComponents, setVisibleComponents] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("dashboardLayout");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    }
+    //default
+    return [
+      "windDirection",
+      "temperatureGraph",
+      "averageTemperature",
+      "flaggedSensors",
+      "humidityGraph",
+      "averageHumidity",
+    ];
+  });
+
+  // Save to localStorage whenever visibleComponents changes
+  useEffect(() => {
+    if (visibleComponents.length > 0) {
+      localStorage.setItem(
+        "dashboardLayout",
+        JSON.stringify(visibleComponents),
+      );
+    }
+  }, [visibleComponents]);
+
+  //set up clock
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadDashboardData = async () => {
+      try {
+        const modules = await fetchModules();
+        if (!isMounted) {
+          return;
+        }
+
+        setHasFlaggedSensors(modules.some((module) => module.flagged));
+
+        const readingsPerModule = await Promise.all(
+          modules.map(async (module) => {
+            try {
+              return await fetchModuleReadings(module.id, 12);
+            } catch {
+              return [] as ModuleReading[];
+            }
+          }),
+        );
+
+        if (!isMounted) {
+          return;
+        }
+
+        const latestReadings = readingsPerModule
+          .map((readings) => readings[0])
+          .filter(Boolean) as ModuleReading[];
+
+        if (latestReadings.length > 0) {
+          const avgTempF =
+            latestReadings.reduce(
+              (sum, reading) => sum + celsiusToFahrenheit(reading.temperature),
+              0,
+            ) / latestReadings.length;
+          const avgHumidity =
+            latestReadings.reduce((sum, reading) => sum + reading.humidity, 0) /
+            latestReadings.length;
+          const avgGasRaw =
+            latestReadings.reduce((sum, reading) => sum + reading.gas_raw, 0) /
+            latestReadings.length;
+
+          setTemperatureValue(Math.round(avgTempF));
+          setHumidityValue(Math.round(avgHumidity));
+          setWindValue(Math.round(avgGasRaw) % 360);
+        }
+
+        const combinedReadings = readingsPerModule
+          .flat()
+          .sort(
+            (first, second) =>
+              new Date(first.timestamp).getTime() -
+              new Date(second.timestamp).getTime(),
+          )
+          .slice(-12);
+
+        if (combinedReadings.length > 0) {
+          setHourlyLabels(
+            combinedReadings.map((reading) =>
+              formatTimeLabel(reading.timestamp),
+            ),
+          );
+          setTemperatureSeries(
+            combinedReadings.map((reading) =>
+              Math.round(celsiusToFahrenheit(reading.temperature)),
+            ),
+          );
+          setHumiditySeries(
+            combinedReadings.map((reading) => Math.round(reading.humidity)),
+          );
+        }
+      } catch {}
+    };
+
+    loadDashboardData();
+    const interval = setInterval(loadDashboardData, 10000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      setTime(
+        now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
+      );
+      setDate(
+        now.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+      );
+    };
+
+    updateDateTime();
+
+    const interval = setInterval(updateDateTime, 60000); //sets timer, update once a minute
+    return () => clearInterval(interval); //clears timer on unmount
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="ml-30 mr-10 h-screen flex flex-col p-4 pb-28">
+      {/* Customize Dashboard Panel */}
+      <DashboardSelectionPanel
+        visibleComponents={visibleComponents}
+        setVisibleComponents={setVisibleComponents}
+      />
+
+      <div className="text-right mb-4 mt-4">
+        <h1 className="text-2xl">{time}</h1>
+        <h1 className="text-2xl">{date}</h1>
+      </div>
+
+      <div className="grid grid-cols-3 grid-rows-2 gap-4 flex-1">
+        {/*render components based on what is visible (selections changed through selection panel)*/}
+        {visibleComponents.includes("windDirection") && (
+          <WindDirection windValue={windValue} />
+        )}
+
+        {visibleComponents.includes("temperatureGraph") && (
+          <TemperatureGraph
+            hourlyLabels={hourlyLabels}
+            temperatureSeries={temperatureSeries}
+          />
+        )}
+
+        {visibleComponents.includes("averageTemperature") && (
+          <AverageTemperature temperatureValue={temperatureValue} />
+        )}
+
+        {visibleComponents.includes("flaggedSensors") && (
+          <FlaggedSensors hasFlaggedSensors={hasFlaggedSensors} />
+        )}
+
+        {visibleComponents.includes("humidityGraph") && (
+          <HumidityGraph
+            hourlyLabels={hourlyLabels}
+            humiditySeries={humiditySeries}
+          />
+        )}
+
+        {visibleComponents.includes("averageHumidity") && (
+          <AverageHumidity humidityValue={humidityValue} />
+        )}
+      </div>
+
+      <div className="mt-6">
+        <div className=" bottom-10 left-10">
+          <h1 className="text-7xl font-bold">Team Name</h1>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
