@@ -1,0 +1,8 @@
+../Core/Src/main.c:65:17:f32_to_f16	3
+../Core/Src/main.c:107:5:main	4
+../Core/Src/main.c:187:6:SystemClock_Config	4
+../Core/Src/main.c:238:13:MX_RTC_Init	5
+../Core/Src/main.c:321:13:MX_UART4_Init	2
+../Core/Src/main.c:356:13:MX_USART2_UART_Init	2
+../Core/Src/main.c:391:13:MX_GPIO_Init	1
+../Core/Src/main.c:433:6:Error_Handler	1
