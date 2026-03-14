@@ -1806,6 +1806,7 @@ int main(void)
 
                 HAL_UART_Receive_DMA(GPS_UART, gpsBuff, 255);
 
+                payload.moduleID = (j << 4) | 4; // 4 is module ID, TODO make constant
                 payload.row = i / 3;
                 memcpy(payload.pixels, &frameBuf[j][i * 32], 32 * 2 * 3);
 
