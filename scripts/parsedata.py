@@ -25,12 +25,13 @@ PAYLOAD_PIXEL_COUNT = 96
 _STRUCT_FORMAT = f"<BBHHHHfff{PAYLOAD_PIXEL_COUNT}H"
 _STRUCT = struct.Struct(_STRUCT_FORMAT)
 
-total_frame = [[0] * 32 for _ in range(24)]
+total_frames = [[[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)]]
+full_msg = False
 
 @dataclass
 class SensorMessage:
     module_id: int
-    sequence_num: int 
+    sequence_num: int
     row_sequence: int
     timestamp: str
     gas_sensor: int
@@ -53,6 +54,8 @@ class SensorMessage:
             f"  payload      = [{len(self.payload)} uint16 values] {self.payload[:8]}...\n"
             f")"
         )
+    
+last_message = None
 
 def parse_timestamp(raw: bytes) -> str:
     """Convert 6 timestamp bytes to HH:MM:SS string.
@@ -78,6 +81,8 @@ def parse_message(data: bytes) -> SensorMessage:
         ValueError: If data is not exactly 214 bytes.
         struct.error: If unpacking fails due to malformed data.
     """
+    global last_message, total_frames, full_msg
+
     if len(data) != MESSAGE_SIZE:
         raise ValueError(f"Expected {MESSAGE_SIZE} bytes, got {len(data)}")
 
@@ -97,10 +102,13 @@ def parse_message(data: bytes) -> SensorMessage:
     pack_voltage = unpacked[8]
     payload      = list(unpacked[9:])  # 96 uint16 pixel values
 
-    for i in range(3):
-        total_frame[row_sequence * 3 + i] = payload[i*32 : i*32 + 32]
+    if last_message != None and sequence_num != last_message.sequence_num:
+        total_frames[sequence_num] = [[0] * 32 for _ in range(24)]
 
-    return SensorMessage(
+    for i in range(3):
+        total_frames[sequence_num][row_sequence * 3 + i] = payload[i*32 : i*32 + 32]
+
+    msg = SensorMessage(
         module_id=module_id,
         sequence_num=sequence_num,
         timestamp=timestamp,
@@ -112,6 +120,8 @@ def parse_message(data: bytes) -> SensorMessage:
         payload=payload,
     )
 
+    last_message = msg
+    return msg
 
 def int_list_to_bytes(int_list: list[int]) -> bytes:
     """Convert a list of integers (each 0-255) to a bytes object.
@@ -160,7 +170,7 @@ def display_frame_data(frame_data: list[list[int]]):
     # print colors!
     data_array = np.reshape(float_values, (24, 32)) # only 3 rows at a time
     therm1.set_data(np.fliplr(data_array))
-    therm1.set_clim(vmin=np.min(data_array), vmax=np.max(data_array))
+    therm1.set_clim(vmin=np.min(-10), vmax=np.max(50))
     fig.canvas.draw()  # Redraw the figure to update the plot and colorbar
     fig.canvas.flush_events()
     # timestamp = time.strftime("%Y%m%d_%H%M%S")
@@ -174,6 +184,7 @@ def serial_reader(port: str, baud_rate: int, data_queue: queue.Queue, stop_event
     try:
         with serial.Serial(port, baudrate=baud_rate, timeout=1) as ser:
             print(f"[Reader] Opened {port} at {baud_rate} baud.")
+            ser.flush()
 
             while not stop_event.is_set():
                 try:
@@ -185,7 +196,7 @@ def serial_reader(port: str, baud_rate: int, data_queue: queue.Queue, stop_event
 
                     hex_str = line[len("Data:"):].strip()
                     chunk = bytes.fromhex(hex_str)
-                    chunk += b'\x00'
+                    # chunk += b'\x00'
 
                     if len(chunk) < MESSAGE_SIZE:
                         print(f"[Reader] Dropping short message ({len(chunk)} bytes, need {MESSAGE_SIZE}).")
@@ -220,15 +231,17 @@ def data_processor(data_queue: queue.Queue, stop_event: threading.Event) -> None
 
 
 def process_chunk(chunk: bytes) -> None:
+    global full_msg
     print(f"[Processor] Processing {len(chunk)} bytes: {chunk[:16].hex()}...")
     print()
     try:
         sensor_msg = parse_message(chunk)
         print(sensor_msg)
-        display_frame_data(total_frame)
+        display_frame_data(total_frames[sensor_msg.sequence_num])
+        for frame in total_frames:
+            print(frame)
     except ValueError:
         print("Wrong number of bytes")
-    
 
 
 
