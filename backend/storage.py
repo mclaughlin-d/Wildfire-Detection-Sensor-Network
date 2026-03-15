@@ -104,36 +104,29 @@ def get_module_by_id(module_id):
 
 #--------------------------------------------------------------------------------
 #MongoDB read/write functions
-def insert_reading(module_id, temperature, humidity, gas_raw, pack_voltage):
-    """
-    Insert a sensor reading into MongoDB.
-    
-    Args:
-        module_id: ID of the sensor module
-        temperature: temp in C? (float)
-        humidity: humidity percentage (float)
-        gas_raw: raw gas sensor value (0-4096)
-        pack_voltage: battery pack voltage (float)
-    
-    Returns:
-        dict with inserted_id and timestamp
-    """
+def insert_reading(module_id, sequence_num=None, timestamp=None, row_sequence=None,
+                   temperature=None, humidity=None, gas_sensor=None,
+                   pack_voltage=None, payload=None):
     db = get_db()
     readings = db["readings"]
-    
+
     reading = {
-        "module_id": module_id,
-        "timestamp": datetime.now(timezone.utc),
+        "module_id":   module_id,
+        "sequence_num": sequence_num,
+        "row_sequence": row_sequence,
+        "timestamp":   datetime.now(timezone.utc),
+        "gas_sensor":  gas_sensor,
         "temperature": temperature,
-        "humidity": humidity,
-        "gas_raw": gas_raw,
+        "humidity":    humidity,
         "pack_voltage": pack_voltage,
+        "payload": payload
+
     }
-    
-    result = readings.insert_one(reading)
+
+    result = readings.insert_one(reading) #built in method
     return {
         "inserted_id": str(result.inserted_id),
-        "timestamp": reading["timestamp"].isoformat(),
+        "timestamp":   reading["timestamp"].isoformat(),
     }
 
 def get_module_readings(module_id, limit=100):
@@ -162,5 +155,8 @@ def get_module_readings(module_id, limit=100):
         reading["timestamp"] = reading["timestamp"].isoformat()
     
     return readings
+
+
+
 
 #--------------------------------------------------------------------------------

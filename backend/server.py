@@ -37,28 +37,36 @@ def post_reading():
     Expected JSON payload:
     {
         "module_id": "mod-001",
-        "temperature": x,
-        "humidity": x,
-        "gas_raw": x,
-        "pack_voltage": x
+        "sequence_num": 1,
+        "row_sequence": 0,
+        "timestamp": "2024-06-01T12:00:00Z",
+        "gas_sensor": 123,
+        "temperature": 25.0,
+        "humidity": 50.0,
+        "pack_voltage": 3.7,
+        "payload":
     }
     """
     data = request.get_json()
-    
-    #validate fields
-    required_fields = ["module_id", "temperature", "humidity", "gas_raw", "pack_voltage"]
-    if not data or not all(field in data for field in required_fields):
+
+    gas_sensor = data.get("gas_sensor", data.get("gas_raw")) if data else None
+    required_fields = ["module_id", "temperature", "humidity", "pack_voltage"]
+    if not data or not all(field in data for field in required_fields) or gas_sensor is None:
         return jsonify({
             "error": "bad_request",
-            "message": f"Missing required fields: {required_fields}"
+            "message": "Missing required reading fields"
         }), 400
 
     result = insert_reading(
         module_id=data["module_id"],
+        sequence_num=data.get("sequence_num"),
+        row_sequence=data.get("row_sequence"),
+        timestamp=data.get("timestamp"),
+        gas_sensor=int(gas_sensor),
         temperature=float(data["temperature"]),
         humidity=float(data["humidity"]),
-        gas_raw=int(data["gas_raw"]),
         pack_voltage=float(data["pack_voltage"]),
+        payload=data.get("payload", [])
     )
     return jsonify({
         "status": "created",

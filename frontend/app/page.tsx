@@ -104,13 +104,15 @@ export default function Home() {
           const avgHumidity =
             latestReadings.reduce((sum, reading) => sum + reading.humidity, 0) /
             latestReadings.length;
-          const avgGasRaw =
-            latestReadings.reduce((sum, reading) => sum + reading.gas_raw, 0) /
-            latestReadings.length;
+          const avgGasSensor =
+            latestReadings.reduce(
+              (sum, reading) => sum + reading.gas_sensor,
+              0,
+            ) / latestReadings.length;
 
           setTemperatureValue(Math.round(avgTempF));
           setHumidityValue(Math.round(avgHumidity));
-          setWindValue(Math.round(avgGasRaw) % 360);
+          setWindValue(Math.round(avgGasSensor) % 360);
         }
 
         const combinedReadings = readingsPerModule

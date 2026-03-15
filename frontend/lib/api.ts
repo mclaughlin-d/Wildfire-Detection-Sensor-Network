@@ -8,11 +8,14 @@ export type ModuleSummary = {
 export type ModuleReading = {
   _id: string;
   module_id: string;
+  sequence_num: number | null;
+  row_sequence: number | null;
   timestamp: string;
   temperature: number;
   humidity: number;
-  gas_raw: number;
+  gas_sensor: number;
   pack_voltage: number;
+  payload: number[] | null;
 };
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5001";
