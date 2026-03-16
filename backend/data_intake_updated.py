@@ -6,6 +6,7 @@ import serial
 import struct
 import time
 import numpy as np
+import datetime
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 
@@ -147,7 +148,7 @@ def _post_reading(sensor_msg: SensorMessage) -> None:
         "module_id":      module_id,
         "sequence_num":   sensor_msg.sequence_num,
         "row_sequence":   sensor_msg.row_sequence,
-        "timestamp":      sensor_msg.timestamp.isoformat(),
+        "timestamp":      sensor_msg.timestamp,
         "temperature":    round(float(sensor_msg.temperature),  4),
         "humidity":       round(float(sensor_msg.humidity),     4),
         "gas_sensor":     int(sensor_msg.gas_sensor),
