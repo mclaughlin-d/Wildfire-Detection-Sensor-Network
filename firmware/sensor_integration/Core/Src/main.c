@@ -64,7 +64,7 @@
 #define GAS_SENSOR_ADC &hadc1
 
 /* ── Thermal Camera (I2C1) ───────────────────────────────────────────────── */
-#define THERMAL_I2C &hi2c1
+#define THERMAL_I2C &hi2c2
 #define THERMAL_SCL_PORT GPIOB
 #define THERMAL_SCL_PIN GPIO_PIN_6 // PB6 — needs 10kΩ pull-up to 3.3V
 #define THERMAL_SDA_PORT GPIOB
@@ -95,8 +95,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
-
-I2C_HandleTypeDef hi2c1;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
@@ -151,7 +149,6 @@ static void MX_UART4_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_UART5_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -1093,7 +1090,7 @@ int MLX90640_GetFrameData()
     dataReady = 0;
     while (dataReady == 0)
     {
-        if (MLX_ReadReg(&hi2c1, 0x8000, &statusRegister) != HAL_OK)
+        if (MLX_ReadReg(&hi2c2, 0x8000, &statusRegister) != HAL_OK)
         {
             HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
             break;
@@ -1104,19 +1101,19 @@ int MLX90640_GetFrameData()
     while (dataReady != 0 && cnt < 5)
     {
 
-        if (MLX_WriteReg(&hi2c1, 0x8000, 0x0030) != HAL_OK)
+        if (MLX_WriteReg(&hi2c2, 0x8000, 0x0030) != HAL_OK)
         {
 
             HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
             break;
         }
 
-        //        if (MLX_ReadBlock(&hi2c1, 0x0400, 832, frameData) != HAL_OK) {
+        //        if (MLX_ReadBlock(&hi2c2, 0x0400, 832, frameData) != HAL_OK) {
         //                	HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
         //        		break;
         //        	}
         HAL_StatusTypeDef status =
-            HAL_I2C_Mem_Read(&hi2c1,
+            HAL_I2C_Mem_Read(&hi2c2,
                              MLX90640_I2C_ADDR,
                              0x0400,
                              I2C_MEMADD_SIZE_16BIT,
@@ -1135,7 +1132,7 @@ int MLX90640_GetFrameData()
             break;
         }
 
-        if (MLX_ReadReg(&hi2c1, 0x8000, &statusRegister) != HAL_OK)
+        if (MLX_ReadReg(&hi2c2, 0x8000, &statusRegister) != HAL_OK)
         {
             HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
             break;
@@ -1151,7 +1148,7 @@ int MLX90640_GetFrameData()
         return -8;
     }
 
-    if (MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1) != HAL_OK)
+    if (MLX_ReadReg(&hi2c2, 0x800D, &controlRegister1) != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
     }
@@ -1450,7 +1447,7 @@ void MLX90640_diagnostic_test(void)
     uint8_t i = 0, ret;
     for (i = 1; i < 128; i++)
     {
-        ret = HAL_I2C_IsDeviceReady(&hi2c1, (uint16_t)(i << 1), 3, 5);
+        ret = HAL_I2C_IsDeviceReady(&hi2c2, (uint16_t)(i << 1), 3, 5);
         if (ret != HAL_OK) /* No ACK Received At That Address */
         {
             HAL_UART_Transmit(&huart2, Space, sizeof(Space), 10000);
@@ -1466,7 +1463,7 @@ void MLX90640_diagnostic_test(void)
 
     // try to read serial number from sensor
     uint16_t serialNo;
-    MLX_ReadReg(&hi2c1, 0x2407, &serialNo);
+    MLX_ReadReg(&hi2c2, 0x2407, &serialNo);
 
     HAL_Delay(100);
     char serialNoBuf[6];
@@ -1475,23 +1472,23 @@ void MLX90640_diagnostic_test(void)
     HAL_UART_Transmit(&huart2, serialNoBuf, sizeof(serialNoBuf), 10000);
 
     // Test 1: Read a known EEPROM register
-    status = MLX_ReadReg(&hi2c1, 0x2400, &testValue);
+    status = MLX_ReadReg(&hi2c2, 0x2400, &testValue);
     sprintf(buf, "EEPROM[0x2400]: 0x%04X, Status: %d\n", testValue, status);
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, strlen(buf), 10000);
 
     // Test 2: Read status register
-    status = MLX_ReadReg(&hi2c1, 0x8000, &testValue);
+    status = MLX_ReadReg(&hi2c2, 0x8000, &testValue);
     sprintf(buf, "Status[0x8000]: 0x%04X, Status: %d\n", testValue, status);
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, strlen(buf), 10000);
 
     // Test 3: Read first frame pixel
-    status = MLX_ReadReg(&hi2c1, 0x0400, &testValue);
+    status = MLX_ReadReg(&hi2c2, 0x0400, &testValue);
     sprintf(buf, "Frame[0x0400]: 0x%04X, Status: %d\n", testValue, status);
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, strlen(buf), 10000);
 
     // Test 4: Try reading 10 words with block read
     uint16_t testBlock[10];
-    status = MLX_ReadBlock(&hi2c1, 0x2400, 10, testBlock);
+    status = MLX_ReadBlock(&hi2c2, 0x2400, 10, testBlock);
     sprintf(buf, "Block read status: %d\n", status);
     HAL_UART_Transmit(&huart2, (uint8_t *)buf, strlen(buf), 10000);
 
@@ -1521,30 +1518,30 @@ void MLX90640_Dump_EEPROM()
  */
 void MLX90640_InitSensor(uint8_t debug)
 {
-    MLX_ReadBlock(&hi2c1, 0x2400, 832, eepromData);
+    MLX_ReadBlock(&hi2c2, 0x2400, 832, eepromData);
     // set to chess mode
     if (debug)
         HAL_UART_Transmit(&huart2, ModeSetMsg, sizeof(ModeSetMsg), 10000);
     uint16_t controlRegister1;
 
-    HAL_StatusTypeDef status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    HAL_StatusTypeDef status = MLX_ReadReg(&hi2c2, 0x800D, &controlRegister1);
     if (status != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
         char buf[40];
-        sprintf(buf, "I2C err: %d, ISR: 0x%08lX\n", status, hi2c1.Instance->ISR);
+        sprintf(buf, "I2C err: %d, ISR: 0x%08lX\n", status, hi2c2.Instance->ISR);
         HAL_UART_Transmit(&huart2, buf, strlen(buf), 10000);
     }
 
     uint16_t value = (controlRegister1 | 0x1000);
-    status = MLX_WriteReg(&hi2c1, 0x800D, value);
+    status = MLX_WriteReg(&hi2c2, 0x800D, value);
     if (status != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
     }
 
     // verify mode set
-    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    status = MLX_ReadReg(&hi2c2, 0x800D, &controlRegister1);
     int modeRAM = (controlRegister1 & 0x1000) >> 12;
     if (modeRAM == 1 && debug)
     {
@@ -1556,7 +1553,7 @@ void MLX90640_InitSensor(uint8_t debug)
     // set resolution
     if (debug)
         HAL_UART_Transmit(&huart2, ResolutionSetMsg, sizeof(ResolutionSetMsg), 10000);
-    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    status = MLX_ReadReg(&hi2c2, 0x800D, &controlRegister1);
     if (status != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
@@ -1565,7 +1562,7 @@ void MLX90640_InitSensor(uint8_t debug)
     uint8_t resolution = 2; // 18-bit
     value = (resolution & 0x03) << 10;
     value = (controlRegister1 & 0xF3FF) | value;
-    status = MLX_WriteReg(&hi2c1, 0x800D, value);
+    status = MLX_WriteReg(&hi2c2, 0x800D, value);
     if (status != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
@@ -1579,19 +1576,19 @@ void MLX90640_InitSensor(uint8_t debug)
     uint8_t refreshRate = 1; // 4Hz
     value = (refreshRate & 0x07) << 7;
 
-    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    status = MLX_ReadReg(&hi2c2, 0x800D, &controlRegister1);
     if (status != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
     }
     value = (controlRegister1 & 0xFC7F) | value;
-    status = MLX_WriteReg(&hi2c1, 0x800D, value);
+    status = MLX_WriteReg(&hi2c2, 0x800D, value);
     if (status != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, ErrorMsgWrite, sizeof(ErrorMsgWrite), 10000);
     }
 
-    status = MLX_ReadReg(&hi2c1, 0x800D, &controlRegister1);
+    status = MLX_ReadReg(&hi2c2, 0x800D, &controlRegister1);
     if (status != HAL_OK)
     {
         HAL_UART_Transmit(&huart2, ErrorMsgRead, sizeof(ErrorMsgRead), 10000);
@@ -1641,7 +1638,7 @@ void I2C_BusRecovery(void)
     HAL_Delay(1);
 
     // Re-initialize I2C peripheral
-    HAL_I2C_DeInit(&hi2c1);
+    HAL_I2C_DeInit(&hi2c2);
     MX_I2C1_Init();
 }
 
@@ -1693,7 +1690,6 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
-  MX_I2C1_Init();
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
 
@@ -2001,54 +1997,6 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
-
-}
-
-/**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x10D19CE4;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Analogue filter
-  */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configure Digital filter
-  */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
 
 }
 
@@ -2395,6 +2343,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB13 PB14 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF4_I2C2;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
