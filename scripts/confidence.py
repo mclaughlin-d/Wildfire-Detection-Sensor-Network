@@ -19,11 +19,11 @@ TEMP_VERY_HIGH = [55, 70, float('inf')]
 temp_memberships = [TEMP_VERY_LOW, TEMP_LOW, TEMP_MEDIUM, TEMP_HIGH, TEMP_VERY_HIGH]
 
 # gas triangles
-GAS_VERY_LOW = [-float('inf'), 0, 50]
-GAS_LOW = [25, 60, 100]
-GAS_MEDIUM = [51, 130, 200]
-GAS_HIGH = [101, 200, 300]
-GAS_VERY_HIGH = [290, 300, float('inf')]
+GAS_VERY_LOW = [-float('inf'), 0, 400]
+GAS_LOW = [300, 500, 550]
+GAS_MEDIUM = [530, 575, 650]
+GAS_HIGH = [630, 670, 720]
+GAS_VERY_HIGH = [700, 850, float('inf')]
 gas_memberships = [GAS_VERY_LOW, GAS_LOW, GAS_MEDIUM, GAS_HIGH, GAS_VERY_HIGH]
 
 # humidity triangles - percent
@@ -73,8 +73,8 @@ def fuzzify_and_detuz(temp, hum, gas):
     print(f"Hum: {hum_result} {hum_classes[hum_result]}")
     print(f"Gas: {gas_result} {gas_classes[gas_result]}")
 
-    Z = (temp_result + 1) * temp_classes[temp_result] + (hum_result + 1) * hum_classes[hum_result] + (gas_result + 1) * gas_classes[gas_result]
-    print(f"Z {Z/3}")
+    Z = (temp_result + 1) * temp_classes[temp_result] * 0.1 + (hum_result + 1) * hum_classes[hum_result] * 0.1 + (gas_result + 1) * gas_classes[gas_result] * 0.8
+    print(f"Z {Z}")
 
 def run_random_tests():
     for _ in range(100):
@@ -94,6 +94,12 @@ def run_random_tests():
     fuzzify_and_detuz(float('inf'), 0, float('inf'))
 
 run_random_tests()
+    
+def run_test_from_file(file: str):
+    with open(file) as f:
+        for line in f:
+            pass
+
 """
 https://ieeexplore.ieee.org/document/6571347
 Fuzzy logic paper (original)
