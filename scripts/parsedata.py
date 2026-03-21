@@ -151,8 +151,8 @@ def display_frame_data(therm1, fig):
     frame_data = [data for row in total_frames[last_message.sequence_num] for data in row]
     float_values = uint16_to_float16(frame_data)
     data_array = np.reshape(float_values, (24, 32))
-
     therm1.set_data(np.fliplr(data_array))
+    therm1.set_clim(vmin=np.min(data_array[:(last_message.sequence_num + 1) * 32]), vmax=np.max(data_array[:(last_message.sequence_num + 1) * 32]))
 
     fig.canvas.draw()
     fig.canvas.flush_events()
@@ -192,7 +192,6 @@ def main() -> None:
     reader_thread.start()
     processor_thread.start()
 
-    # Main thread owns the plot update loop
     try:
         while reader_thread.is_alive():
             display_frame_data(therm1, fig)
