@@ -152,7 +152,7 @@ def display_frame_data(therm1, fig):
     float_values = uint16_to_float16(frame_data)
     data_array = np.reshape(float_values, (24, 32))
     therm1.set_data(np.fliplr(data_array))
-    therm1.set_clim(vmin=np.min(data_array[:(last_message.sequence_num + 1) * 32]), vmax=np.max(data_array[:(last_message.sequence_num + 1) * 32]))
+    therm1.set_clim(vmin=np.min(data_array[:(last_message.row_sequence + 1) * 32]), vmax=np.max(data_array[:(last_message.row_sequence + 1) * 32]))
 
     fig.canvas.draw()
     fig.canvas.flush_events()
