@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 
+const STREAM_URL = "http://localhost:5001/api/drone/stream";
 export default function DroneControl() {
   const [droneStatus, setDroneStatus] = useState<boolean>(false);
   return (
@@ -17,6 +18,12 @@ export default function DroneControl() {
           Drone Status: {droneStatus ? "Deployed" : "Not Deployed"}
         </div>
 
+        <img
+          src={STREAM_URL}
+          alt="Drone feed"
+          style={{ width: "640px", height: "480px", display: "block" }}
+          // onError={() => console.error("Stream connection lost")}
+        />
         <div
           className="p-12 justify-center flex items-center rounded-lg mt-4 text-2xl font-semibold hover:opacity-80 transition cursor-pointer"
           style={{ backgroundColor: "var(--secondary-color)" }}

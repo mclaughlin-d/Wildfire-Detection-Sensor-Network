@@ -1,7 +1,16 @@
 from datetime import datetime, timezone
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from storage import get_module_by_id, get_modules, init_db, insert_reading, get_module_readings
+import gi
+import threading
+import time
+import queue
+
+gi.require_version('Gst', '1.0')
+gi.require_version('GstApp', '1.0')
+from gi.repository import Gst, GstApp, GLib
+
 
 app = Flask(__name__)
 
@@ -9,6 +18,83 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 #initialize db
 init_db()
+
+
+Gst.init(None)
+
+frame_queue = queue.Queue(maxsize=2)  # small buffer — drop old frames
+pipeline = None
+glib_loop = None
+
+def on_new_sample(appsink):
+    """Called by GStreamer whenever a new frame is ready."""
+    sample = appsink.emit("pull-sample")
+    if sample is None:
+        return Gst.FlowReturn.ERROR
+
+    buf = sample.get_buffer()
+    success, map_info = buf.map(Gst.MapFlags.READ)
+    if not success:
+        return Gst.FlowReturn.ERROR
+
+    frame_bytes = bytes(map_info.data)
+    buf.unmap(map_info)
+
+    # Drop oldest frame if the queue is full (keeps latency low)
+    if frame_queue.full():
+        try:
+            frame_queue.get_nowait()
+        except queue.Empty:
+            pass
+    frame_queue.put(frame_bytes)
+
+    return Gst.FlowReturn.OK
+
+def build_pipeline(source: str = "test") -> Gst.Pipeline:
+    if source == "test":
+        pipeline_str = (
+            "videotestsrc is-live=true pattern=ball ! "
+            "videoconvert ! "
+            "videoscale ! video/x-raw,width=640,height=480 ! "
+            "jpegenc quality=85 ! "
+            "appsink name=sink emit-signals=true sync=false max-buffers=1 drop=true"
+        )
+    elif source == "webcam":
+        pipeline_str = ("v4l2src device=/dev/video1 ! " 
+                        "videoscale ! video/x-raw,width=640,height=480,format=YUY2,framerate=30/1 ! "  "videoconvert ! "
+                        "jpegenc quality=85 ! "
+            "appsink name=sink name=sink emit-signals=true max-buffers=1")
+        
+    elif source == "drone":
+        pipeline_str = ("udpsrc port=5000 ! h264parse ! avdec_h264 ! autovideosink sync=false")
+
+    p = Gst.parse_launch(pipeline_str)
+    sink = p.get_by_name("sink")
+    sink.connect("new-sample", on_new_sample)
+    return p
+
+def start_gstreamer(source: str = "test"):
+    """Start the GStreamer pipeline in a background GLib main loop."""
+    global pipeline, glib_loop
+
+    pipeline = build_pipeline(source)
+    pipeline.set_state(Gst.State.PLAYING)
+
+    glib_loop = GLib.MainLoop()
+    thread = threading.Thread(target=glib_loop.run, daemon=True)
+    thread.start()
+
+
+def stop_gstreamer():
+    global pipeline, glib_loop
+    if pipeline:
+        pipeline.set_state(Gst.State.NULL)
+    if glib_loop:
+        glib_loop.quit()
+
+
+# Start with the test source by default; swap to "v4l2" or "rtsp" as needed
+start_gstreamer(source="webcam")
 
 #check
 @app.get("/api/health")
@@ -91,6 +177,46 @@ def get_readings(module_id):
         "count": len(readings),
         "readings": readings
     }), 200
+
+def generate_mjpeg():
+    """Generator that yields MJPEG frames for the multipart HTTP response."""
+    while True:
+        try:
+            frame = frame_queue.get(timeout=50.0)
+        except queue.Empty:
+            continue
+
+        yield (
+            b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n"
+            + frame +
+            b"\r\n"
+        )
+
+@app.post("/api/drone/stream/source")
+def set_stream_source():
+    """Hot-swap the GStreamer source at runtime (test / v4l2 / rtsp)."""
+    data = request.get_json()
+    source = data.get("source", "test") if data else "test"
+    if source not in ("test", "v4l2", "rtsp"):
+        return jsonify({"error": "invalid source"}), 400
+
+    stop_gstreamer()
+    time.sleep(0.5)
+    start_gstreamer(source=source)
+    return jsonify({"status": "ok", "source": source})
+
+@app.get("/api/drone/stream")
+def post_video():
+    return Response(
+        generate_mjpeg(),
+        mimetype="multipart/x-mixed-replace; boundary=frame",
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        }
+    )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
