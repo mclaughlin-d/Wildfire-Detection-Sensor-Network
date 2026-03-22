@@ -58,6 +58,10 @@
 #define SERVO_180_DEG 2500  // 2.5ms pulse
 #define SERVO_DELAY_MS 2000 // 2 seconds between positions
 
+#define SERVO_28_DEG (SERVO_0_DEG + (28.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_83_DEG (SERVO_0_DEG + (83.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_138_DEG (SERVO_0_DEG + (138.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+
 /* ── Gas Sensor MQ-2 (ADC1_IN4) ─────────────────────────────────────────── */
 #define GAS_SENSOR_PORT GPIOC
 #define GAS_SENSOR_PIN GPIO_PIN_3
@@ -1727,19 +1731,19 @@ int main(void)
     while (1)
     {
 
-        int servo_posns[] = {SERVO_0_DEG, SERVO_90_DEG, SERVO_180_DEG};
+        float servo_posns[] = {SERVO_28_DEG, SERVO_83_DEG, SERVO_138_DEG};
 
         // get frames and rotate servo
-        // TODO: determine actual degree posns
+        // TODO: determine actual degree
         for (int i = 0; i < 3; i++)
         {
 			__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, servo_posns[i]);
-			HAL_Delay(500); // 1/2 second delay to match thermal camera refresh rate of 2Hz
+			HAL_Delay(1000); // 1/2 second delay to match thermal camera refresh rate of 2Hz
             MLX90640_getFrame(i);
 
         }
 
-        __HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, SERVO_0_DEG);
+        __HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, servo_posns[0]);
         HAL_Delay(SERVO_DELAY_MS);
 
 
