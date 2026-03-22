@@ -58,9 +58,10 @@
 #define SERVO_180_DEG 2500  // 2.5ms pulse
 #define SERVO_DELAY_MS 2000 // 2 seconds between positions
 
-#define SERVO_28_DEG (SERVO_0_DEG + (28.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
-#define SERVO_83_DEG (SERVO_0_DEG + (83.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
-#define SERVO_138_DEG (SERVO_0_DEG + (138.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_33_DEG (SERVO_0_DEG + (33.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_66_DEG (SERVO_0_DEG + (66.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_99_DEG (SERVO_0_DEG + (99.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_132_DEG (SERVO_0_DEG + (132.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
 
 /* ── Gas Sensor MQ-2 (ADC1_IN4) ─────────────────────────────────────────── */
 #define GAS_SENSOR_PORT GPIOC
@@ -73,6 +74,8 @@
 #define THERMAL_SCL_PIN GPIO_PIN_6 // PB6 — needs 10kΩ pull-up to 3.3V
 #define THERMAL_SDA_PORT GPIOB
 #define THERMAL_SDA_PIN GPIO_PIN_7 // PB7 — needs 10kΩ pull-up to 3.3V
+#define NUM_FRAMES 4
+#define NUM_MESSAGES_PER_FRAME 8
 
 /* ── Fans (TIM2_CH3, TIM2_CH4) ──────────────────────────────────────────── */
 #define FAN_TIMER &htim2
@@ -255,7 +258,7 @@ uint16_t frameData[834] = {0}; // for reading frame data from sensor
 uint8_t rawReadBuf[834 * 2] = {0};
 uint16_t eepromData[832];            // for storing eeprom data
 float tempBuf[24 * 32] = {0};        // for temp calculation
-uint16_t frameBuf[3][24 * 32] = {0}; // for final float temperature values for each frame
+uint16_t frameBuf[NUM_FRAMES][24 * 32] = {0}; // for final float temperature values for each frame
 uint8_t gpsBuff[255];
 
 // various messages for sending over UART
@@ -1580,7 +1583,7 @@ void MLX90640_InitSensor(uint8_t debug)
     // set frame rate
     if (debug)
         HAL_UART_Transmit(&huart2, FrameRateSetMsg, sizeof(FrameRateSetMsg), 10000);
-    uint8_t refreshRate = 1; // 4Hz
+    uint8_t refreshRate = 2; // 1; // 4Hz
     value = (refreshRate & 0x07) << 7;
 
     status = MLX_ReadReg(&hi2c2, 0x800D, &controlRegister1);
@@ -1731,11 +1734,11 @@ int main(void)
     while (1)
     {
 
-        float servo_posns[] = {SERVO_28_DEG, SERVO_83_DEG, SERVO_138_DEG};
+        float servo_posns[] = {SERVO_33_DEG, SERVO_66_DEG, SERVO_99_DEG, SERVO_132_DEG};
 
         // get frames and rotate servo
         // TODO: determine actual degree
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < NUM_FRAMES; i++)
         {
 			__HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, servo_posns[i]);
 			HAL_Delay(1000); // 1/2 second delay to match thermal camera refresh rate of 2Hz
@@ -1747,9 +1750,9 @@ int main(void)
         HAL_Delay(SERVO_DELAY_MS);
 
 
-        for (int j = 0; j < 3; j++)
+        for (int j = 0; j < NUM_FRAMES; j++)
         {
-            for (int i = 0; i < 24; i+=3)
+            for (int i = 0; i < NUM_FRAMES * NUM_MESSAGES_PER_FRAME; i+=3)
             {
                 // Turn Fans On
                 //		  __HAL_TIM_SET_COMPARE(FAN_TIMER, FAN1_CHANNEL, FAN_ON);
@@ -1839,7 +1842,7 @@ int main(void)
             }
         }
 
-        for (int a = 0; a < 3; a++)
+        for (int a = 0; a < NUM_FRAMES; a++)
         {
             float temp;
             int j, k;
