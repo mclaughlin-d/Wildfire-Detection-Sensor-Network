@@ -1750,96 +1750,95 @@ int main(void)
         HAL_Delay(SERVO_DELAY_MS);
 
 
-        for (int j = 0; j < NUM_FRAMES; j++)
+        for (int frameNum = 0; frameNum < NUM_FRAMES; frameNum++)
         {
-            for (int i = 0; i < NUM_FRAMES * NUM_MESSAGES_PER_FRAME; i+=3)
-            {
-                // Turn Fans On
-                //		  __HAL_TIM_SET_COMPARE(FAN_TIMER, FAN1_CHANNEL, FAN_ON);
-                //		  __HAL_TIM_SET_COMPARE(FAN_TIMER, FAN2_CHANNEL, FAN_ON);
+        	for (int msgNum = 0; msgNum < NUM_MESSAGES_PER_FRAME; msgNum++) {
+				// Turn Fans On
+				//		  __HAL_TIM_SET_COMPARE(FAN_TIMER, FAN1_CHANNEL, FAN_ON);
+				//		  __HAL_TIM_SET_COMPARE(FAN_TIMER, FAN2_CHANNEL, FAN_ON);
 
-                HAL_Delay(100); // arbitrary delay value
+				HAL_Delay(100); // arbitrary delay value
 
-                // Take ADC readings for Gas Sensor
-                //  TODO: the sensor must be on for 5-10 minutes to get accurate readings
-                HAL_ADC_Start(GAS_SENSOR_ADC);
-                if (HAL_ADC_PollForConversion(GAS_SENSOR_ADC, 100) == HAL_OK)
-                {
-                    // Get gas sensor reading
-                    adc_value = HAL_ADC_GetValue(GAS_SENSOR_ADC);
-                    payload.gas = adc_value;
+				// Take ADC readings for Gas Sensor
+				//  TODO: the sensor must be on for 5-10 minutes to get accurate readings
+				HAL_ADC_Start(GAS_SENSOR_ADC);
+				if (HAL_ADC_PollForConversion(GAS_SENSOR_ADC, 100) == HAL_OK)
+				{
+					// Get gas sensor reading
+					adc_value = HAL_ADC_GetValue(GAS_SENSOR_ADC);
+					payload.gas = adc_value;
 
-                    // Print reading to console
-                    int len = snprintf(buff, sizeof(buff), "GAS ADC Value: %d\r\n", adc_value);
-                    HAL_UART_Transmit(COM_UART, (uint8_t *)buff, len, HAL_MAX_DELAY);
-                }
-                HAL_ADC_Stop(GAS_SENSOR_ADC);
-                HAL_Delay(100);
+					// Print reading to console
+					int len = snprintf(buff, sizeof(buff), "GAS ADC Value: %d\r\n", adc_value);
+					HAL_UART_Transmit(COM_UART, (uint8_t *)buff, len, HAL_MAX_DELAY);
+				}
+				HAL_ADC_Stop(GAS_SENSOR_ADC);
+				HAL_Delay(100);
 
-                // Take Readings from temperature/humidity sensor
-                DHT22_Data_t dht = DHT22_GetData();
-                if (dht.valid)
-                {
-                    int len = snprintf(buff, sizeof(buff), "Temp: %.1fC  Hum: %.1f%%\r\n", dht.temperature_C, dht.humidity);
-                    payload.temp = dht.temperature_C;
-                    payload.hum = dht.humidity;
+				// Take Readings from temperature/humidity sensor
+				DHT22_Data_t dht = DHT22_GetData();
+				if (dht.valid)
+				{
+					int len = snprintf(buff, sizeof(buff), "Temp: %.1fC  Hum: %.1f%%\r\n", dht.temperature_C, dht.humidity);
+					payload.temp = dht.temperature_C;
+					payload.hum = dht.humidity;
 
-                    HAL_UART_Transmit(COM_UART, (uint8_t *)buff, len, HAL_MAX_DELAY);
-                }
-                HAL_Delay(100); // arbitrary delay value
+					HAL_UART_Transmit(COM_UART, (uint8_t *)buff, len, HAL_MAX_DELAY);
+				}
+				HAL_Delay(100); // arbitrary delay value
 
-                // Take GPS Time Readings
-                if (flag == 1)
-                {
-                    char *g = strstr((char *)gpsBuff, "$GPGGA");
+				// Take GPS Time Readings
+				if (flag == 1)
+				{
+					char *g = strstr((char *)gpsBuff, "$GPGGA");
 
-                    // prints raw data to debug gps
-                    HAL_UART_Transmit(COM_UART, (uint8_t *)gpsBuff, strlen((char *)gpsBuff), 200);
-                    HAL_UART_Transmit(COM_UART, (uint8_t *)"\r\n", 2, 200);
+					// prints raw data to debug gps
+					HAL_UART_Transmit(COM_UART, (uint8_t *)gpsBuff, strlen((char *)gpsBuff), 200);
+					HAL_UART_Transmit(COM_UART, (uint8_t *)"\r\n", 2, 200);
 
-                    if (g != NULL)
-                    {
-                        char *utc = strchr(g, ',');
-                        if (utc != NULL && strlen(utc) >= 7)
-                        {
-                            utc++;
+					if (g != NULL)
+					{
+						char *utc = strchr(g, ',');
+						if (utc != NULL && strlen(utc) >= 7)
+						{
+							utc++;
 
-                            char hh[3] = {utc[0], utc[1], '\0'};
-                            char mm[3] = {utc[2], utc[3], '\0'};
-                            char ss[3] = {utc[4], utc[5], '\0'};
+							char hh[3] = {utc[0], utc[1], '\0'};
+							char mm[3] = {utc[2], utc[3], '\0'};
+							char ss[3] = {utc[4], utc[5], '\0'};
 
-                            // variables with integer values for time
-                            payload.hr = atoi(hh);
-                            payload.min = atoi(mm);
-                            payload.sec = atoi(ss);
+							// variables with integer values for time
+							payload.hr = atoi(hh);
+							payload.min = atoi(mm);
+							payload.sec = atoi(ss);
 
-                            // prints time to console
-                            char strUTC[9];
-                            snprintf(strUTC, sizeof(strUTC), "%s:%s:%s", hh, mm, ss);
-                            HAL_UART_Transmit(COM_UART, (uint8_t *)"UTC: ", 5, 200);
-                            HAL_UART_Transmit(COM_UART, (uint8_t *)strUTC, 8, 200);
-                            HAL_UART_Transmit(COM_UART, (uint8_t *)"\r\n", 2, 200);
-                        }
-                    }
+							// prints time to console
+							char strUTC[9];
+							snprintf(strUTC, sizeof(strUTC), "%s:%s:%s", hh, mm, ss);
+							HAL_UART_Transmit(COM_UART, (uint8_t *)"UTC: ", 5, 200);
+							HAL_UART_Transmit(COM_UART, (uint8_t *)strUTC, 8, 200);
+							HAL_UART_Transmit(COM_UART, (uint8_t *)"\r\n", 2, 200);
+						}
+					}
 
-                    flag = 0;
+					flag = 0;
 //                    HAL_UART_Receive_DMA(GPS_UART, gpsBuff, 255);
-                }
+				}
 
-                HAL_UART_Receive_DMA(GPS_UART, gpsBuff, 255);
+				HAL_UART_Receive_DMA(GPS_UART, gpsBuff, 255);
 
-                payload.moduleID = (j << 4) | 4; // 4 is module ID, TODO make constant
-                payload.row = i / NUM_FRAMES;
-                memcpy(payload.pixels, &(frameBuf[j][i * 32]), 32 * 2 * 3);
+				payload.moduleID = (frameNum << 4) | 4; // 4 is module ID, TODO make constant
+				payload.row = msgNum;
+				memcpy(payload.pixels, &(frameBuf[frameNum][msgNum*3 * 32]), 32 * 2 * 3);
 
-                HAL_StatusTypeDef uartstatus = HAL_UART_Transmit(&huart5, (uint8_t *)&payload, sizeof(payload), 10000);
-                if (uartstatus != HAL_OK)
-                {
-                    char loraerrorbuf[] = "Error transmitting to lora module!\n";
-                    HAL_UART_Transmit(&huart2, loraerrorbuf, sizeof(loraerrorbuf), 10000);
-                }
-                HAL_Delay(500);
-            }
+				HAL_StatusTypeDef uartstatus = HAL_UART_Transmit(&huart5, (uint8_t *)&payload, sizeof(payload), 10000);
+				if (uartstatus != HAL_OK)
+				{
+					char loraerrorbuf[] = "Error transmitting to lora module!\n";
+					HAL_UART_Transmit(&huart2, loraerrorbuf, sizeof(loraerrorbuf), 10000);
+				}
+				HAL_Delay(500);
+        	}
         }
 
         for (int a = 0; a < NUM_FRAMES; a++)
