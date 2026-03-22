@@ -1,6 +1,7 @@
 
 from parsedata import SensorMessage
 import numpy as np
+import re
 
 
 """
@@ -20,10 +21,10 @@ temp_memberships = [TEMP_VERY_LOW, TEMP_LOW, TEMP_MEDIUM, TEMP_HIGH, TEMP_VERY_H
 
 # gas triangles
 GAS_VERY_LOW = [-float('inf'), 0, 400]
-GAS_LOW = [300, 500, 550]
-GAS_MEDIUM = [530, 575, 650]
-GAS_HIGH = [630, 670, 720]
-GAS_VERY_HIGH = [700, 850, float('inf')]
+GAS_LOW = [300, 500, 590]
+GAS_MEDIUM = [560, 575, 640]
+GAS_HIGH = [620, 660, 700]
+GAS_VERY_HIGH = [680, 770, float('inf')]
 gas_memberships = [GAS_VERY_LOW, GAS_LOW, GAS_MEDIUM, GAS_HIGH, GAS_VERY_HIGH]
 
 # humidity triangles - percent
@@ -73,8 +74,16 @@ def fuzzify_and_detuz(temp, hum, gas):
     print(f"Hum: {hum_result} {hum_classes[hum_result]}")
     print(f"Gas: {gas_result} {gas_classes[gas_result]}")
 
-    Z = (temp_result + 1) * temp_classes[temp_result] * 0.1 + (hum_result + 1) * hum_classes[hum_result] * 0.1 + (gas_result + 1) * gas_classes[gas_result] * 0.8
+    indices = np.array([1, 2, 3, 4, 5])
+    temp_z = np.dot(indices, temp_classes) / np.sum(temp_classes)  # weighted average
+    hum_z = np.dot(indices, hum_classes) / np.sum(hum_classes)
+    gas_z = np.dot(indices, gas_classes) / np.sum(gas_classes)
+
+    Z = (temp_z) * 0.2 + (hum_z) * 0.1 + (gas_z) * 0.7
+    Z = np.clip(Z, 1, 5)
     print(f"Z {Z}")
+
+    print()
 
 def run_random_tests():
     for _ in range(100):
@@ -93,12 +102,55 @@ def run_random_tests():
     print("Testing max")
     fuzzify_and_detuz(float('inf'), 0, float('inf'))
 
-run_random_tests()
+# run_random_tests()
     
 def run_test_from_file(file: str):
-    with open(file) as f:
-        for line in f:
-            pass
+    records = []
+ 
+    # Match pairs of lines: GAS ADC followed by Temp/Hum
+    pattern = re.compile(
+        r"GAS ADC Value:\s*(\d+)\s*\n"
+        r"Temp:\s*([\d.]+)C\s+Hum:\s*([\d.]+)%"
+    )
+ 
+    with open(file, "r") as f:
+        readings = f.read()
+
+    for match in pattern.finditer(readings):
+        records.append({
+            "gas": int(match.group(1)),
+            "temp":  float(match.group(2)),
+            "hum": float(match.group(3)),
+        })
+    
+    for r in records:
+        print(f"Calling with temp {r['temp']} C, hum {r['hum']}%, gas {r['gas']} ppm")
+        fuzzify_and_detuz(r["temp"], r["hum"], r["gas"])
+
+
+# print("Should only show confidence near end as smoke increases")
+# run_test_from_file("READINGS.txt")
+
+# print()
+# print()
+
+# print("Readings ramping up...should be confident-ish")
+run_test_from_file("readingrampup.txt")
+
+# print()
+# print()
+
+# print("flamesgoingdown, should decrease in confidence...")
+# run_test_from_file("flamingogingdown.txt")
+
+# print()
+# print()
+
+# print("smoldering")
+# run_test_from_file("smolder.txt")
+
+# print()
+# print()
 
 """
 https://ieeexplore.ieee.org/document/6571347

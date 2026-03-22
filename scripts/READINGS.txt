@@ -1,7 +1,5 @@
 
-INITIAL 5 MIN:
-
-GAS ADC Value: 196GAS ADC Value: 238
+GAS ADC Value: 238
 Temp: 4.7C  Hum: 59.3%
 GAS ADC Value: 272
 Temp: 4.7C  Hum: 59.4%
@@ -723,14 +721,3 @@ GAS ADC Value: 576
 Temp: 4.2C  Hum: 59.8%
 GAS ADC Value: 576
 Temp: 4.2C  Hum: 59.8%
-
-
-
-
-NOTE: around 575 as smoke appears
-
-
-
-
-
-

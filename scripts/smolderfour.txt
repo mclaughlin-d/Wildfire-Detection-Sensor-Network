@@ -1,0 +1,2334 @@
+Calling with temp 4.5 C, hum 59.4%, gas 619 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.3230769230769231
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 620 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.3076923076923077
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 620 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.3076923076923077
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 616 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.36923076923076925
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 617 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.35384615384615387
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 621 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.2923076923076923
+Z 2.6551515151515144
+
+Calling with temp 4.5 C, hum 59.4%, gas 617 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.35384615384615387
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 618 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.3384615384615385
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 613 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.4153846153846154
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 619 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.3230769230769231
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 619 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.3230769230769231
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 626 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.2153846153846154
+Z 2.887368421052631
+
+Calling with temp 4.5 C, hum 59.4%, gas 616 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.36923076923076925
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 618 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.3384615384615385
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 614 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.4
+Z 2.6
+
+Calling with temp 4.5 C, hum 59.5%, gas 623 ppm
+Temp: 0 0.85
+Hum: 2 0.95
+Gas: 2 0.26153846153846155
+Z 2.756
+
+Calling with temp 4.5 C, hum 59.4%, gas 618 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.3384615384615385
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 615 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.38461538461538464
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 621 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.2923076923076923
+Z 2.6551515151515144
+
+Calling with temp 4.5 C, hum 59.4%, gas 612 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.4307692307692308
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 617 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.35384615384615387
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 612 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.4307692307692308
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 616 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.36923076923076925
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.4%, gas 613 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 2 0.4153846153846154
+Z 2.5999999999999996
+
+Calling with temp 4.5 C, hum 59.5%, gas 623 ppm
+Temp: 0 0.85
+Hum: 2 0.95
+Gas: 2 0.26153846153846155
+Z 2.756
+
+Calling with temp 4.5 C, hum 59.4%, gas 641 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 3 0.525
+Z 3.3
+
+Calling with temp 4.5 C, hum 59.4%, gas 641 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 3 0.525
+Z 3.3
+
+Calling with temp 4.5 C, hum 59.4%, gas 640 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 3 0.5
+Z 3.3
+
+Calling with temp 4.5 C, hum 59.4%, gas 646 ppm
+Temp: 0 0.85
+Hum: 2 0.9399999999999998
+Gas: 3 0.65
+Z 3.3
+
+Calling with temp 4.5 C, hum 59.5%, gas 637 ppm
+Temp: 0 0.85
+Hum: 2 0.95
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.4%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9399999999999998
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.5 C, hum 59.5%, gas 638 ppm
+Temp: 0 0.85
+Hum: 2 0.95
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.4 C, hum 59.5%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.5 C, hum 59.5%, gas 639 ppm
+Temp: 0 0.85
+Hum: 2 0.95
+Gas: 3 0.475
+Z 3.2780392156862743
+
+Calling with temp 4.4 C, hum 59.5%, gas 644 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.6
+Z 3.3
+
+Calling with temp 4.5 C, hum 59.5%, gas 638 ppm
+Temp: 0 0.85
+Hum: 2 0.95
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.4 C, hum 59.5%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.35
+Z 3.1539130434782607
+
+Calling with temp 4.4 C, hum 59.5%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.35
+Z 3.1539130434782607
+
+Calling with temp 4.4 C, hum 59.5%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 59.6%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.5%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.5%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.5%, gas 656 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.9
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.5%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.4 C, hum 59.5%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.6%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.5%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.6%, gas 639 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.475
+Z 3.2780392156862743
+
+Calling with temp 4.4 C, hum 59.5%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.5%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.6%, gas 642 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.55
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.6%, gas 656 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.9
+Z 3.3
+
+Calling with temp 4.5 C, hum 59.6%, gas 636 ppm
+Temp: 0 0.85
+Hum: 2 0.9600000000000002
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.6%, gas 643 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.575
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.6%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.6%, gas 647 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.675
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.5%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.95
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.6%, gas 642 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.55
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.6%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 59.6%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.35
+Z 3.1539130434782607
+
+Calling with temp 4.4 C, hum 59.6%, gas 621 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 2 0.2923076923076923
+Z 2.6551515151515144
+
+Calling with temp 4.4 C, hum 59.6%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.275
+Z 3.065581395348837
+
+Calling with temp 4.4 C, hum 59.6%, gas 642 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.55
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.6%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 59.7%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.3
+Z 3.096363636363636
+
+Calling with temp 4.4 C, hum 59.6%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.6%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.6%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.5 C, hum 59.7%, gas 641 ppm
+Temp: 0 0.85
+Hum: 2 0.9700000000000003
+Gas: 3 0.525
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.6%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 59.7%, gas 640 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.5
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.6%, gas 650 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.75
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.6%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.6%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.3
+Z 3.096363636363636
+
+Calling with temp 4.4 C, hum 59.6%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 59.7%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.6%, gas 641 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9600000000000002
+Gas: 3 0.525
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.7%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.7%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.3
+Z 3.096363636363636
+
+Calling with temp 4.4 C, hum 59.7%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.35
+Z 3.1539130434782607
+
+Calling with temp 4.4 C, hum 59.7%, gas 642 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.55
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.7%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 59.7%, gas 639 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.475
+Z 3.2780392156862743
+
+Calling with temp 4.4 C, hum 59.7%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.275
+Z 3.065581395348837
+
+Calling with temp 4.4 C, hum 59.7%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.35
+Z 3.1539130434782607
+
+Calling with temp 4.4 C, hum 59.7%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.35
+Z 3.1539130434782607
+
+Calling with temp 4.4 C, hum 59.7%, gas 643 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.575
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.7%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.4 C, hum 59.7%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.8%, gas 642 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.55
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.7%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.7%, gas 642 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.55
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.7%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.4 C, hum 59.7%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.8%, gas 643 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.575
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.8%, gas 648 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.7
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.8%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.325
+Z 3.1257777777777775
+
+Calling with temp 4.4 C, hum 59.8%, gas 643 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.575
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.8%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.8%, gas 641 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.525
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.7%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9700000000000003
+Gas: 3 0.3
+Z 3.096363636363636
+
+Calling with temp 4.4 C, hum 59.8%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.325
+Z 3.1257777777777775
+
+Calling with temp 4.4 C, hum 59.8%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.8%, gas 641 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.525
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.8%, gas 640 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.5
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.8%, gas 640 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.5
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.8%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 59.9%, gas 641 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.525
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.8%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.35
+Z 3.1539130434782607
+
+Calling with temp 4.4 C, hum 59.8%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.4 C, hum 59.8%, gas 640 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.5
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.9%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.9%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.4 C, hum 59.9%, gas 629 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.225
+Z 2.9995121951219503
+
+Calling with temp 4.4 C, hum 59.8%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.275
+Z 3.065581395348837
+
+Calling with temp 4.4 C, hum 59.8%, gas 649 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.725
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.9%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.8%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 59.9%, gas 639 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.475
+Z 3.2780392156862743
+
+Calling with temp 4.4 C, hum 59.9%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.9%, gas 654 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.85
+Z 3.3
+
+Calling with temp 4.4 C, hum 59.9%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 59.9%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 59.9%, gas 630 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.25
+Z 3.0333333333333337
+
+Calling with temp 4.4 C, hum 59.9%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.35
+Z 3.1539130434782607
+
+Calling with temp 4.4 C, hum 59.9%, gas 629 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.225
+Z 2.9995121951219503
+
+Calling with temp 4.4 C, hum 59.9%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.275
+Z 3.065581395348837
+
+Calling with temp 4.4 C, hum 60.0%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.275
+Z 3.065581395348837
+
+Calling with temp 4.4 C, hum 59.9%, gas 628 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.2
+Z 2.964
+
+Calling with temp 4.4 C, hum 59.9%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.275
+Z 3.065581395348837
+
+Calling with temp 4.4 C, hum 59.9%, gas 639 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.475
+Z 3.2780392156862743
+
+Calling with temp 4.4 C, hum 59.9%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 60.0%, gas 630 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.25
+Z 3.0333333333333337
+
+Calling with temp 4.4 C, hum 59.9%, gas 630 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.25
+Z 3.0333333333333337
+
+Calling with temp 4.4 C, hum 59.9%, gas 626 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 2 0.2153846153846154
+Z 2.887368421052631
+
+Calling with temp 4.4 C, hum 59.9%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.3
+Z 3.096363636363636
+
+Calling with temp 4.4 C, hum 60.0%, gas 645 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.625
+Z 3.3
+
+Calling with temp 4.4 C, hum 60.0%, gas 626 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 2 0.2153846153846154
+Z 2.887368421052631
+
+Calling with temp 4.4 C, hum 59.9%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.45
+Z 3.2552
+
+Calling with temp 4.4 C, hum 59.9%, gas 628 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.2
+Z 2.964
+
+Calling with temp 4.4 C, hum 59.9%, gas 629 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.225
+Z 2.9995121951219503
+
+Calling with temp 4.4 C, hum 59.9%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9899999999999999
+Gas: 3 0.375
+Z 3.1808510638297873
+
+Calling with temp 4.4 C, hum 60.0%, gas 630 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.25
+Z 3.0333333333333337
+
+Calling with temp 4.4 C, hum 60.0%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.4
+Z 3.2066666666666666
+
+Calling with temp 4.4 C, hum 60.0%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 60.0%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.325
+Z 3.1257777777777775
+
+Calling with temp 4.4 C, hum 60.0%, gas 630 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.25
+Z 3.0333333333333337
+
+Calling with temp 4.4 C, hum 60.0%, gas 627 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 2 0.2
+Z 2.9266666666666667
+
+Calling with temp 4.4 C, hum 60.0%, gas 645 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.625
+Z 3.3
+
+Calling with temp 4.4 C, hum 60.0%, gas 640 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.5
+Z 3.3
+
+Calling with temp 4.4 C, hum 60.0%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 60.0%, gas 630 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.25
+Z 3.0333333333333337
+
+Calling with temp 4.4 C, hum 60.0%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.425
+Z 3.231428571428571
+
+Calling with temp 4.4 C, hum 60.0%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 1.0
+Gas: 3 0.325
+Z 3.1257777777777775
+
+Calling with temp 4.4 C, hum 60.1%, gas 640 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.5
+Z 3.2989898989898987
+
+Calling with temp 4.4 C, hum 60.1%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.425
+Z 3.2304184704184697
+
+Calling with temp 4.4 C, hum 60.1%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.325
+Z 3.1247676767676764
+
+Calling with temp 4.4 C, hum 60.1%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.35
+Z 3.1529029424681596
+
+Calling with temp 4.4 C, hum 60.1%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.4
+Z 3.2056565656565654
+
+Calling with temp 4.4 C, hum 60.1%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.375
+Z 3.179840962819686
+
+Calling with temp 4.4 C, hum 60.1%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.275
+Z 3.064571294338736
+
+Calling with temp 4.4 C, hum 60.1%, gas 640 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.5
+Z 3.2989898989898987
+
+Calling with temp 4.4 C, hum 60.1%, gas 629 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.225
+Z 2.998502094111849
+
+Calling with temp 4.4 C, hum 60.1%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.45
+Z 3.2541898989898987
+
+Calling with temp 4.4 C, hum 60.1%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.325
+Z 3.1247676767676764
+
+Calling with temp 4.4 C, hum 60.1%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.425
+Z 3.2304184704184697
+
+Calling with temp 4.4 C, hum 60.1%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.275
+Z 3.064571294338736
+
+Calling with temp 4.4 C, hum 60.2%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.325
+Z 3.1237369614512467
+
+Calling with temp 4.4 C, hum 60.2%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.45
+Z 3.2531591836734695
+
+Calling with temp 4.4 C, hum 60.1%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9799999999999998
+Gas: 3 0.325
+Z 3.1247676767676764
+
+Calling with temp 4.4 C, hum 60.2%, gas 639 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.475
+Z 3.275998399359744
+
+Calling with temp 4.4 C, hum 60.2%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.35
+Z 3.1518722271517303
+
+Calling with temp 4.4 C, hum 60.2%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.275
+Z 3.0635405790223063
+
+Calling with temp 4.4 C, hum 60.2%, gas 629 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.225
+Z 2.99747137879542
+
+Calling with temp 4.4 C, hum 60.2%, gas 629 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.225
+Z 2.99747137879542
+
+Calling with temp 4.4 C, hum 60.2%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.275
+Z 3.0635405790223063
+
+Calling with temp 4.4 C, hum 60.2%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.425
+Z 3.2293877551020405
+
+Calling with temp 4.4 C, hum 60.2%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.375
+Z 3.1788102475032565
+
+Calling with temp 4.4 C, hum 60.2%, gas 646 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.65
+Z 3.297959183673469
+
+Calling with temp 4.4 C, hum 60.2%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.35
+Z 3.1518722271517303
+
+Calling with temp 4.4 C, hum 60.2%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.45
+Z 3.2531591836734695
+
+Calling with temp 4.4 C, hum 60.2%, gas 628 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.2
+Z 2.9619591836734696
+
+Calling with temp 4.4 C, hum 60.2%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.45
+Z 3.2531591836734695
+
+Calling with temp 4.4 C, hum 60.2%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.3
+Z 3.094322820037106
+
+Calling with temp 4.4 C, hum 60.2%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.325
+Z 3.1237369614512467
+
+Calling with temp 4.4 C, hum 60.2%, gas 636 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.4
+Z 3.204625850340136
+
+Calling with temp 4.4 C, hum 60.2%, gas 648 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.7
+Z 3.297959183673469
+
+Calling with temp 4.4 C, hum 60.3%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.45
+Z 3.2521072164948452
+
+Calling with temp 4.4 C, hum 60.2%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.3
+Z 3.094322820037106
+
+Calling with temp 4.4 C, hum 60.3%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.35
+Z 3.150820259973106
+
+Calling with temp 4.4 C, hum 60.3%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.3
+Z 3.0932708528584816
+
+Calling with temp 4.4 C, hum 60.3%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.425
+Z 3.2283357879234162
+
+Calling with temp 4.4 C, hum 60.3%, gas 635 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.375
+Z 3.1777582803246327
+
+Calling with temp 4.4 C, hum 60.2%, gas 629 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.225
+Z 2.99747137879542
+
+Calling with temp 4.4 C, hum 60.3%, gas 639 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.475
+Z 3.2749464321811197
+
+Calling with temp 4.4 C, hum 60.3%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.275
+Z 3.0624886118436825
+
+Calling with temp 4.5 C, hum 60.3%, gas 645 ppm
+Temp: 0 0.85
+Hum: 2 0.9400000000000006
+Gas: 3 0.625
+Z 3.296907216494845
+
+Calling with temp 4.4 C, hum 60.3%, gas 628 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.2
+Z 2.9609072164948453
+
+Calling with temp 4.4 C, hum 60.3%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.275
+Z 3.0624886118436825
+
+Calling with temp 4.4 C, hum 60.3%, gas 639 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.475
+Z 3.2749464321811197
+
+Calling with temp 4.4 C, hum 60.3%, gas 641 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.525
+Z 3.296907216494845
+
+Calling with temp 4.4 C, hum 60.3%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.425
+Z 3.2283357879234162
+
+Calling with temp 4.5 C, hum 60.3%, gas 628 ppm
+Temp: 0 0.85
+Hum: 2 0.9400000000000006
+Gas: 3 0.2
+Z 2.9609072164948453
+
+Calling with temp 4.4 C, hum 60.3%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.275
+Z 3.0624886118436825
+
+Calling with temp 4.4 C, hum 60.3%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.325
+Z 3.122684994272623
+
+Calling with temp 4.4 C, hum 60.4%, gas 632 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9200000000000003
+Gas: 3 0.3
+Z 3.0921969696969693
+
+Calling with temp 4.4 C, hum 60.4%, gas 639 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9200000000000003
+Gas: 3 0.475
+Z 3.2738725490196074
+
+Calling with temp 4.4 C, hum 60.4%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9200000000000003
+Gas: 3 0.325
+Z 3.121611111111111
+
+Calling with temp 4.4 C, hum 60.4%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9200000000000003
+Gas: 3 0.275
+Z 3.0614147286821707
+
+Calling with temp 4.5 C, hum 60.4%, gas 630 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.25
+Z 3.029166666666667
+
+Calling with temp 4.4 C, hum 60.4%, gas 634 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9200000000000003
+Gas: 3 0.35
+Z 3.149746376811594
+
+Calling with temp 4.4 C, hum 60.4%, gas 638 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9200000000000003
+Gas: 3 0.45
+Z 3.251033333333333
+
+Calling with temp 4.4 C, hum 60.3%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 3 0.275
+Z 3.0624886118436825
+
+Calling with temp 4.5 C, hum 60.3%, gas 632 ppm
+Temp: 0 0.85
+Hum: 2 0.9400000000000006
+Gas: 3 0.3
+Z 3.0932708528584816
+
+Calling with temp 4.4 C, hum 60.4%, gas 637 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9200000000000003
+Gas: 3 0.425
+Z 3.227261904761904
+
+Calling with temp 4.5 C, hum 60.4%, gas 633 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.325
+Z 3.121611111111111
+
+Calling with temp 4.5 C, hum 60.4%, gas 639 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.475
+Z 3.2738725490196074
+
+Calling with temp 4.5 C, hum 60.4%, gas 634 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.35
+Z 3.149746376811594
+
+Calling with temp 4.5 C, hum 60.4%, gas 637 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.425
+Z 3.227261904761904
+
+Calling with temp 4.5 C, hum 60.4%, gas 634 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.35
+Z 3.149746376811594
+
+Calling with temp 4.5 C, hum 60.4%, gas 631 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.275
+Z 3.0614147286821707
+
+Calling with temp 4.5 C, hum 60.4%, gas 647 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.675
+Z 3.2958333333333334
+
+Calling with temp 4.5 C, hum 60.4%, gas 632 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.3
+Z 3.0921969696969693
+
+Calling with temp 4.5 C, hum 60.4%, gas 636 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.4
+Z 3.2024999999999997
+
+Calling with temp 4.5 C, hum 60.4%, gas 633 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.325
+Z 3.121611111111111
+
+Calling with temp 4.5 C, hum 60.4%, gas 632 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.3
+Z 3.0921969696969693
+
+Calling with temp 4.5 C, hum 60.4%, gas 637 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.425
+Z 3.227261904761904
+
+Calling with temp 4.5 C, hum 60.4%, gas 639 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.475
+Z 3.2738725490196074
+
+Calling with temp 4.5 C, hum 60.4%, gas 633 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.325
+Z 3.121611111111111
+
+Calling with temp 4.5 C, hum 60.5%, gas 634 ppm
+Temp: 0 0.85
+Hum: 2 0.9
+Gas: 3 0.35
+Z 3.148649885583524
+
+Calling with temp 4.5 C, hum 60.5%, gas 634 ppm
+Temp: 0 0.85
+Hum: 2 0.9
+Gas: 3 0.35
+Z 3.148649885583524
+
+Calling with temp 4.5 C, hum 60.4%, gas 630 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.25
+Z 3.029166666666667
+
+Calling with temp 4.5 C, hum 60.4%, gas 639 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.475
+Z 3.2738725490196074
+
+Calling with temp 4.5 C, hum 60.4%, gas 636 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.4
+Z 3.2024999999999997
+
+Calling with temp 4.5 C, hum 60.4%, gas 632 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.3
+Z 3.0921969696969693
+
+Calling with temp 4.5 C, hum 60.3%, gas 633 ppm
+Temp: 0 0.85
+Hum: 2 0.9400000000000006
+Gas: 3 0.325
+Z 3.122684994272623
+
+Calling with temp 4.5 C, hum 60.4%, gas 632 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.3
+Z 3.0921969696969693
+
+Calling with temp 4.5 C, hum 60.4%, gas 627 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.2
+Z 2.9225000000000003
+
+Calling with temp 4.5 C, hum 60.4%, gas 639 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.475
+Z 3.2738725490196074
+
+Calling with temp 4.5 C, hum 60.4%, gas 634 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.35
+Z 3.149746376811594
+
+Calling with temp 4.5 C, hum 60.4%, gas 635 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.375
+Z 3.176684397163121
+
+Calling with temp 4.5 C, hum 60.4%, gas 630 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.25
+Z 3.029166666666667
+
+Calling with temp 4.5 C, hum 60.4%, gas 637 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.425
+Z 3.227261904761904
+
+Calling with temp 4.5 C, hum 60.4%, gas 633 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.325
+Z 3.121611111111111
+
+Calling with temp 4.5 C, hum 60.4%, gas 635 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.375
+Z 3.176684397163121
+
+Calling with temp 4.5 C, hum 60.4%, gas 632 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.3
+Z 3.0921969696969693
+
+Calling with temp 4.5 C, hum 60.4%, gas 634 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.35
+Z 3.149746376811594
+
+Calling with temp 4.5 C, hum 60.5%, gas 630 ppm
+Temp: 0 0.85
+Hum: 2 0.9
+Gas: 3 0.25
+Z 3.028070175438597
+
+Calling with temp 4.5 C, hum 60.4%, gas 634 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.35
+Z 3.149746376811594
+
+Calling with temp 4.5 C, hum 60.5%, gas 632 ppm
+Temp: 0 0.85
+Hum: 2 0.9
+Gas: 3 0.3
+Z 3.0911004784688996
+
+Calling with temp 4.5 C, hum 60.5%, gas 633 ppm
+Temp: 0 0.85
+Hum: 2 0.9
+Gas: 3 0.325
+Z 3.120514619883041
+
+Calling with temp 4.5 C, hum 60.4%, gas 625 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.23076923076923078
+Z 2.8417792792792795
+
+Calling with temp 4.5 C, hum 60.4%, gas 628 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.2
+Z 2.959833333333333
+
+Calling with temp 4.5 C, hum 60.5%, gas 641 ppm
+Temp: 0 0.85
+Hum: 2 0.9
+Gas: 3 0.525
+Z 3.294736842105263
+
+Calling with temp 4.5 C, hum 60.4%, gas 639 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.475
+Z 3.2738725490196074
+
+Calling with temp 4.5 C, hum 60.4%, gas 630 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.25
+Z 3.029166666666667
+
+Calling with temp 4.5 C, hum 60.4%, gas 623 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.26153846153846155
+Z 2.751833333333333
+
+Calling with temp 4.5 C, hum 60.4%, gas 628 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.2
+Z 2.959833333333333
+
+Calling with temp 4.5 C, hum 60.4%, gas 625 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.23076923076923078
+Z 2.8417792792792795
+
+Calling with temp 4.5 C, hum 60.4%, gas 625 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.23076923076923078
+Z 2.8417792792792795
+
+Calling with temp 4.5 C, hum 60.3%, gas 622 ppm
+Temp: 0 0.85
+Hum: 2 0.9400000000000006
+Gas: 2 0.27692307692307694
+Z 2.703966040024257
+
+Calling with temp 4.5 C, hum 60.4%, gas 623 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.26153846153846155
+Z 2.751833333333333
+
+Calling with temp 4.5 C, hum 60.4%, gas 623 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.26153846153846155
+Z 2.751833333333333
+
+Calling with temp 4.5 C, hum 60.4%, gas 630 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.25
+Z 3.029166666666667
+
+Calling with temp 4.5 C, hum 60.4%, gas 622 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.27692307692307694
+Z 2.7028921568627453
+
+Calling with temp 4.5 C, hum 60.4%, gas 623 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.26153846153846155
+Z 2.751833333333333
+
+Calling with temp 4.5 C, hum 60.4%, gas 627 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.2
+Z 2.9225000000000003
+
+Calling with temp 4.5 C, hum 60.4%, gas 621 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.2923076923076923
+Z 2.650984848484848
+
+Calling with temp 4.5 C, hum 60.3%, gas 620 ppm
+Temp: 0 0.85
+Hum: 2 0.9400000000000006
+Gas: 2 0.3076923076923077
+Z 2.596907216494845
+
+Calling with temp 4.5 C, hum 60.4%, gas 621 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.2923076923076923
+Z 2.650984848484848
+
+Calling with temp 4.5 C, hum 60.3%, gas 636 ppm
+Temp: 0 0.85
+Hum: 2 0.9400000000000006
+Gas: 3 0.4
+Z 3.203573883161512
+
+Calling with temp 4.5 C, hum 60.4%, gas 622 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 2 0.27692307692307694
+Z 2.7028921568627453
+
+Calling with temp 4.5 C, hum 60.4%, gas 628 ppm
+Temp: 0 0.85
+Hum: 2 0.9200000000000003
+Gas: 3 0.2
+Z 2.959833333333333
+
+Calling with temp 4.4 C, hum 60.3%, gas 622 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.27692307692307694
+Z 2.703966040024257
+
+Calling with temp 4.4 C, hum 60.3%, gas 619 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.3230769230769231
+Z 2.596907216494845
+
+Calling with temp 4.4 C, hum 60.3%, gas 627 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.2
+Z 2.923573883161512
+
+Calling with temp 4.4 C, hum 60.3%, gas 620 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.3076923076923077
+Z 2.596907216494845
+
+Calling with temp 4.4 C, hum 60.3%, gas 624 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.24615384615384617
+Z 2.7991294387170673
+
+Calling with temp 4.4 C, hum 60.2%, gas 631 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.275
+Z 3.0635405790223063
+
+Calling with temp 4.4 C, hum 60.3%, gas 624 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.24615384615384617
+Z 2.7991294387170673
+
+Calling with temp 4.4 C, hum 60.3%, gas 621 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.2923076923076923
+Z 2.6520587316463597
+
+Calling with temp 4.4 C, hum 60.3%, gas 625 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.23076923076923078
+Z 2.8428531624407913
+
+Calling with temp 4.4 C, hum 60.3%, gas 622 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.27692307692307694
+Z 2.703966040024257
+
+Calling with temp 4.4 C, hum 60.2%, gas 618 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.3384615384615385
+Z 2.597959183673469
+
+Calling with temp 4.4 C, hum 60.2%, gas 626 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.2153846153846154
+Z 2.8853276047261005
+
+Calling with temp 4.4 C, hum 60.3%, gas 618 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.3384615384615385
+Z 2.596907216494845
+
+Calling with temp 4.4 C, hum 60.3%, gas 617 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.35384615384615387
+Z 2.596907216494845
+
+Calling with temp 4.4 C, hum 60.2%, gas 614 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.4
+Z 2.5979591836734697
+
+Calling with temp 4.4 C, hum 60.2%, gas 623 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.26153846153846155
+Z 2.7539591836734694
+
+Calling with temp 4.4 C, hum 60.2%, gas 619 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.3230769230769231
+Z 2.597959183673469
+
+Calling with temp 4.4 C, hum 60.3%, gas 615 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.38461538461538464
+Z 2.596907216494845
+
+Calling with temp 4.4 C, hum 60.3%, gas 624 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.24615384615384617
+Z 2.7991294387170673
+
+Calling with temp 4.4 C, hum 60.2%, gas 633 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 3 0.325
+Z 3.1237369614512467
+
+Calling with temp 4.4 C, hum 60.2%, gas 618 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.3384615384615385
+Z 2.597959183673469
+
+Calling with temp 4.4 C, hum 60.3%, gas 616 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.36923076923076925
+Z 2.596907216494845
+
+Calling with temp 4.4 C, hum 60.2%, gas 620 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.3076923076923077
+Z 2.597959183673469
+
+Calling with temp 4.4 C, hum 60.3%, gas 622 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.27692307692307694
+Z 2.703966040024257
+
+Calling with temp 4.4 C, hum 60.2%, gas 612 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.4307692307692308
+Z 2.597959183673469
+
+Calling with temp 4.4 C, hum 60.2%, gas 614 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.4
+Z 2.5979591836734697
+
+Calling with temp 4.4 C, hum 60.2%, gas 614 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.4
+Z 2.5979591836734697
+
+Calling with temp 4.4 C, hum 60.2%, gas 617 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.35384615384615387
+Z 2.597959183673469
+
+Calling with temp 4.4 C, hum 60.2%, gas 619 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.3230769230769231
+Z 2.597959183673469
+
+Calling with temp 4.4 C, hum 60.2%, gas 618 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9599999999999994
+Gas: 2 0.3384615384615385
+Z 2.597959183673469
+
+Calling with temp 4.3 C, hum 60.3%, gas 622 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.27692307692307694
+Z 2.703966040024257
+
+Calling with temp 4.4 C, hum 60.3%, gas 618 ppm
+Temp: 0 0.8533333333333334
+Hum: 2 0.9400000000000006
+Gas: 2 0.3384615384615385
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.2%, gas 618 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9599999999999994
+Gas: 2 0.3384615384615385
+Z 2.597959183673469
+
+Calling with temp 4.3 C, hum 60.3%, gas 615 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.38461538461538464
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.3%, gas 616 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.36923076923076925
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.3%, gas 633 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 3 0.325
+Z 3.122684994272623
+
+Calling with temp 4.3 C, hum 60.3%, gas 621 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.2923076923076923
+Z 2.6520587316463597
+
+Calling with temp 4.3 C, hum 60.3%, gas 613 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.4153846153846154
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.3%, gas 615 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.38461538461538464
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.3%, gas 618 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.3384615384615385
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.3%, gas 616 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.36923076923076925
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.3%, gas 620 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.3076923076923077
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.4%, gas 618 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.3384615384615385
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 611 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.4461538461538462
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.3%, gas 608 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.49230769230769234
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.3%, gas 618 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9400000000000006
+Gas: 2 0.3384615384615385
+Z 2.596907216494845
+
+Calling with temp 4.3 C, hum 60.4%, gas 612 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.4307692307692308
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 613 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.4153846153846154
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 616 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.36923076923076925
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 610 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.46153846153846156
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 616 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.36923076923076925
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 614 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.4
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 611 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.4461538461538462
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 619 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.3230769230769231
+Z 2.595833333333333
+
+Calling with temp 4.2 C, hum 60.4%, gas 614 ppm
+Temp: 0 0.86
+Hum: 2 0.9200000000000003
+Gas: 2 0.4
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 613 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.4153846153846154
+Z 2.595833333333333
+
+Calling with temp 4.2 C, hum 60.4%, gas 629 ppm
+Temp: 0 0.86
+Hum: 2 0.9200000000000003
+Gas: 3 0.225
+Z 2.9953455284552835
+
+Calling with temp 4.2 C, hum 60.5%, gas 610 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.46153846153846156
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.4%, gas 610 ppm
+Temp: 0 0.86
+Hum: 2 0.9200000000000003
+Gas: 2 0.46153846153846156
+Z 2.595833333333333
+
+Calling with temp 4.2 C, hum 60.4%, gas 612 ppm
+Temp: 0 0.86
+Hum: 2 0.9200000000000003
+Gas: 2 0.4307692307692308
+Z 2.595833333333333
+
+Calling with temp 4.2 C, hum 60.4%, gas 607 ppm
+Temp: 0 0.86
+Hum: 2 0.9200000000000003
+Gas: 2 0.5076923076923077
+Z 2.595833333333333
+
+Calling with temp 4.3 C, hum 60.4%, gas 611 ppm
+Temp: 0 0.8566666666666667
+Hum: 2 0.9200000000000003
+Gas: 2 0.4461538461538462
+Z 2.595833333333333
+
+Calling with temp 4.2 C, hum 60.5%, gas 614 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.4
+Z 2.5947368421052635
+
+Calling with temp 4.2 C, hum 60.4%, gas 607 ppm
+Temp: 0 0.86
+Hum: 2 0.9200000000000003
+Gas: 2 0.5076923076923077
+Z 2.595833333333333
+
+Calling with temp 4.2 C, hum 60.5%, gas 614 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.4
+Z 2.5947368421052635
+
+Calling with temp 4.2 C, hum 60.5%, gas 612 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.4307692307692308
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 611 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.4461538461538462
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 613 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.4153846153846154
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 606 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.5230769230769231
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 612 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.4307692307692308
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.4%, gas 613 ppm
+Temp: 0 0.86
+Hum: 2 0.9200000000000003
+Gas: 2 0.4153846153846154
+Z 2.595833333333333
+
+Calling with temp 4.2 C, hum 60.5%, gas 618 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.3384615384615385
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 609 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.47692307692307695
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 616 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.36923076923076925
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 607 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.5076923076923077
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 607 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.5076923076923077
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.5%, gas 606 ppm
+Temp: 0 0.86
+Hum: 2 0.9
+Gas: 2 0.5230769230769231
+Z 2.594736842105263
+
+Calling with temp 4.2 C, hum 60.6%, gas 622 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.27692307692307694
+Z 2.7006758448060078
+
+Calling with temp 4.2 C, hum 60.6%, gas 610 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.46153846153846156
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.6%, gas 616 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.36923076923076925
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.6%, gas 605 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.5384615384615384
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.6%, gas 612 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.4307692307692308
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.7%, gas 614 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.4
+Z 2.59247311827957
+
+Calling with temp 4.2 C, hum 60.6%, gas 613 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.4153846153846154
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.7%, gas 621 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.2923076923076923
+Z 2.647624633431084
+
+Calling with temp 4.2 C, hum 60.7%, gas 608 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.49230769230769234
+Z 2.5924731182795693
+
+Calling with temp 4.2 C, hum 60.6%, gas 607 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.5076923076923077
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.6%, gas 613 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.4153846153846154
+Z 2.5936170212765957
+
+Calling with temp 4.1 C, hum 60.7%, gas 611 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8599999999999994
+Gas: 2 0.4461538461538462
+Z 2.5924731182795693
+
+Calling with temp 4.2 C, hum 60.6%, gas 610 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.46153846153846156
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.7%, gas 614 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.4
+Z 2.59247311827957
+
+Calling with temp 4.2 C, hum 60.6%, gas 610 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.46153846153846156
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.7%, gas 611 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.4461538461538462
+Z 2.5924731182795693
+
+Calling with temp 4.2 C, hum 60.6%, gas 625 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.23076923076923078
+Z 2.839562967222542
+
+Calling with temp 4.2 C, hum 60.7%, gas 611 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.4461538461538462
+Z 2.5924731182795693
+
+Calling with temp 4.2 C, hum 60.7%, gas 609 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.47692307692307695
+Z 2.5924731182795693
+
+Calling with temp 4.2 C, hum 60.7%, gas 610 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.46153846153846156
+Z 2.5924731182795693
+
+Calling with temp 4.2 C, hum 60.6%, gas 614 ppm
+Temp: 0 0.86
+Hum: 2 0.8799999999999997
+Gas: 2 0.4
+Z 2.5936170212765957
+
+Calling with temp 4.2 C, hum 60.7%, gas 616 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.36923076923076925
+Z 2.5924731182795693
+
+Calling with temp 4.1 C, hum 60.7%, gas 608 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8599999999999994
+Gas: 2 0.49230769230769234
+Z 2.5924731182795693
+
+Calling with temp 4.2 C, hum 60.7%, gas 624 ppm
+Temp: 0 0.86
+Hum: 2 0.8599999999999994
+Gas: 2 0.24615384615384617
+Z 2.794695340501792
+
+Calling with temp 4.1 C, hum 60.7%, gas 610 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8599999999999994
+Gas: 2 0.46153846153846156
+Z 2.5924731182795693
+
+Calling with temp 4.1 C, hum 60.8%, gas 616 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.36923076923076925
+Z 2.5913043478260867
+
+Calling with temp 4.1 C, hum 60.7%, gas 607 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8599999999999994
+Gas: 2 0.5076923076923077
+Z 2.5924731182795693
+
+Calling with temp 4.1 C, hum 60.7%, gas 605 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8599999999999994
+Gas: 2 0.5384615384615384
+Z 2.5924731182795693
+
+Calling with temp 4.1 C, hum 60.7%, gas 614 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8599999999999994
+Gas: 2 0.4
+Z 2.59247311827957
+
+Calling with temp 4.1 C, hum 60.7%, gas 610 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8599999999999994
+Gas: 2 0.46153846153846156
+Z 2.5924731182795693
+
+Calling with temp 4.1 C, hum 60.7%, gas 617 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8599999999999994
+Gas: 2 0.35384615384615387
+Z 2.5924731182795693
+
+Calling with temp 4.1 C, hum 60.8%, gas 623 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.26153846153846155
+Z 2.747304347826087
+
+Calling with temp 4.1 C, hum 60.8%, gas 611 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.4461538461538462
+Z 2.5913043478260867
+
+Calling with temp 4.1 C, hum 60.8%, gas 613 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.4153846153846154
+Z 2.5913043478260867
+
+Calling with temp 4.1 C, hum 60.8%, gas 608 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.49230769230769234
+Z 2.5913043478260867
+
+Calling with temp 4.1 C, hum 60.8%, gas 616 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.36923076923076925
+Z 2.5913043478260867
+
+Calling with temp 4.1 C, hum 60.8%, gas 611 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.4461538461538462
+Z 2.5913043478260867
+
+Calling with temp 4.1 C, hum 60.8%, gas 615 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.38461538461538464
+Z 2.5913043478260867
+
+Calling with temp 4.1 C, hum 60.8%, gas 612 ppm
+Temp: 0 0.8633333333333333
+Hum: 2 0.8400000000000005
+Gas: 2 0.4307692307692308
+Z 2.5913043478260867
+
