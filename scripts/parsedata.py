@@ -7,13 +7,14 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
+import cv2
 
 MESSAGE_SIZE = 214
 PAYLOAD_PIXEL_COUNT = 96
 _STRUCT_FORMAT = f"<BBHHHHfff{PAYLOAD_PIXEL_COUNT}H"
 _STRUCT = struct.Struct(_STRUCT_FORMAT)
 
-total_frames = [[[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)]]
+total_frames = [[[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)]]
 last_message = None
 
 @dataclass
@@ -143,19 +144,52 @@ def process_chunk(chunk: bytes) -> None:
         print("Wrong number of bytes")
 
 
+# taken from online
+def load_thermal(img):
+    # Normalize 16-bit to 8-bit
+    if img.dtype != np.uint8:
+        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+
+    
+    # Ensure 3-channel for OpenCV stitching pipeline
+    if len(img.shape) == 2:
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    elif img.shape[2] == 1:
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    
+    return img
+
+
 def display_frame_data(therm1, fig):
     """Called from the main thread to update the plot once."""
     if last_message is None:
         return
 
-    frame_data = [data for row in total_frames[last_message.sequence_num] for data in row]
-    float_values = uint16_to_float16(frame_data)
-    data_array = np.reshape(float_values, (24, 32))
+
+    frame0 = np.rot90(np.flip(np.array(total_frames[0])))
+    frame1 = np.rot90(np.flip(np.array(total_frames[1])))
+    frame2 = np.rot90(np.flip(np.array(total_frames[2])))
+    frame3 = np.rot90(np.flip(np.array(total_frames[3])))
+
+    overall_data = np.hstack((frame3, frame2, frame1, frame0))
+    overall_data = overall_data.flatten()
+
+    float_values = uint16_to_float16(overall_data)
+    data_array = np.reshape(float_values, (32, 24 * 4))
     therm1.set_data(np.fliplr(data_array))
-    therm1.set_clim(vmin=np.min(data_array[:(last_message.row_sequence + 1) * 32]), vmax=np.max(data_array[:(last_message.row_sequence + 1) * 32]))
+    therm1.set_clim(vmin=np.min(data_array), vmax=np.max(data_array))
 
     fig.canvas.draw()
     fig.canvas.flush_events()
+
+    sticher = cv2.Stitcher_create()
+    (status, stitched) = sticher.stitch([load_thermal(frame0), load_thermal(frame1), load_thermal(frame2), load_thermal(frame3)])
+    if status == cv2.Stitcher_OK:
+        cv2.imshow("stitched frame", stitched)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    else:
+        print("STITCHER FAILED")
 
 
 def parse_args() -> argparse.Namespace:
@@ -170,7 +204,7 @@ def main() -> None:
     stop_event = threading.Event()
 
     fig, ax = plt.subplots(figsize=(12, 7))
-    therm1 = ax.imshow(np.zeros((24, 32)), vmin=0, vmax=40)
+    therm1 = ax.imshow(np.zeros((32, 24 * 4)), vmin=0, vmax=40)
     cbar = fig.colorbar(therm1)
     cbar.set_label('Temperature [$^{\circ}$C]', fontsize=14)
     plt.ion()
