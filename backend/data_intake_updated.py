@@ -144,6 +144,11 @@ def data_processor(data_queue: queue.Queue, stop_event: threading.Event) -> None
 
 def _post_reading(sensor_msg: SensorMessage) -> None:
     module_id = _MODULE_ID_MAP.get(sensor_msg.module_id, f"mod-{sensor_msg.module_id:03d}")
+
+    # call get_confidence, imported from confidence.py, here?
+    # currently, takes in single temp, hum, gas
+    # will be modified to take in the array of thermal camera readings
+    # alternatively, can be tested by taking max of payload, once payload is converted to floats
     reading = {
         "module_id":      module_id,
         "sequence_num":   sensor_msg.sequence_num,
