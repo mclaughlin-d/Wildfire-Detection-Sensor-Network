@@ -59,9 +59,9 @@
 #define SERVO_DELAY_MS 2000 // 2 seconds between positions
 
 #define SERVO_33_DEG (SERVO_0_DEG + (33.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
-#define SERVO_66_DEG (SERVO_0_DEG + (66.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
-#define SERVO_99_DEG (SERVO_0_DEG + (99.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
-#define SERVO_132_DEG (SERVO_0_DEG + (132.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_65_DEG (SERVO_0_DEG + (65.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_97_DEG (SERVO_0_DEG + (97.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
+#define SERVO_130_DEG (SERVO_0_DEG + (130.0/180.0) * (SERVO_180_DEG - SERVO_0_DEG))
 
 /* ── Gas Sensor MQ-2 (ADC1_IN4) ─────────────────────────────────────────── */
 #define GAS_SENSOR_PORT GPIOC
@@ -1734,7 +1734,7 @@ int main(void)
     while (1)
     {
 
-        float servo_posns[] = {SERVO_33_DEG, SERVO_66_DEG, SERVO_99_DEG, SERVO_132_DEG};
+        float servo_posns[] = {SERVO_33_DEG, SERVO_65_DEG, SERVO_97_DEG, SERVO_130_DEG};
 
         // get frames and rotate servo
         // TODO: determine actual degree
@@ -1747,7 +1747,7 @@ int main(void)
         }
 
         __HAL_TIM_SET_COMPARE(SERVO_TIMER, SERVO_CHANNEL, servo_posns[0]);
-        HAL_Delay(SERVO_DELAY_MS);
+        HAL_Delay(1000);
 
 
         for (int frameNum = 0; frameNum < NUM_FRAMES; frameNum++)
