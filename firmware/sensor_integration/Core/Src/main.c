@@ -1829,7 +1829,7 @@ int main(void)
                 HAL_UART_Receive_DMA(GPS_UART, gpsBuff, 255);
 
                 payload.moduleID = (j << 4) | 4; // 4 is module ID, TODO make constant
-                payload.row = i / 3;
+                payload.row = i / NUM_FRAMES;
                 memcpy(payload.pixels, &(frameBuf[j][i * 32]), 32 * 2 * 3);
 
                 HAL_StatusTypeDef uartstatus = HAL_UART_Transmit(&huart5, (uint8_t *)&payload, sizeof(payload), 10000);
