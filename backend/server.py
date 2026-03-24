@@ -18,7 +18,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 #initialize db
-# init_db()
+init_db()
 
 
 Gst.init(None)
@@ -68,22 +68,12 @@ def build_pipeline(source: str = "test") -> Gst.Pipeline:
             "appsink name=sink name=sink emit-signals=true max-buffers=1")
         
     elif source == "drone":
-        pipeline_str = ("udpsrc port=5600 ! h264parse ! avdec_h264 ! "
-                        "videoconvert ! "
-                        "jpegenc quality=85 ! "
-                        "appsink name=sink name=sink emit-signals=true max-buffers=1"
-           # "autovideosink sync=false"
-            )
-        # pipeline_str = (
-        #     "udpsrc port=5000 ! application/x-rtp,media=video,encoding-name=H264 ! "
-        #     "rtph264depay ! h264parse ! "
-        #     "rtph264pay config-interval=-1 pt=96 ! "
-        #     "webrtcbin name=sendrcv"
-        # )
-
-        """
-        gst-launch-1.0 udpsrc port=5600 caps="application/x-rtp" num-buffers=1 ! rtpjpegdepay ! jpegparse ! jpegdec ! jpegenc quality=85 ! filesink location=out.jpg
-        """
+        pipeline_str = (
+            "udpsrc address=127.0.0.1 port=5600 ! application/x-rtp,media=(string)video,encoding-name=(string)H264 ! rtph264depay ! decodebin ! "
+            "videoconvert ! "
+            "jpegenc quality=85 ! "
+            "appsink name=sink name=sink emit-signals=true max-buffers=1"
+        )
     p = Gst.parse_launch(pipeline_str)
 
     sink = p.get_by_name("sink")
@@ -110,32 +100,21 @@ def stop_gstreamer():
         glib_loop.quit()
 
 
-# Start with the test source by default; swap to "v4l2" or "rtsp" as needed
 start_gstreamer(source="drone")
-
-# gst_rtsp = GstRtspServer.RTSPServer()
-# gst_rtsp.attach(None)
-# mount = gst_rtsp.get_mount_points()
-# mount.add_factory(build_pipeline)
-# print(f"RTSP server started on port {gst_rtsp.get_bound_port()}")
-
 
 #check
 @app.get("/api/health")
 def health_check():
-    return
     return jsonify({"status": "ok", "time": datetime.now(timezone.utc).isoformat()})
 
 #get list of all modules with basic data (id, flagged boolean, latitude, longitude)
 @app.get("/api/modules")
 def list_modules():
-    return jsonify({"modules": []})
     return jsonify({"modules": get_modules()})
 
 #get basic data for module with given id, returns 404 if not found
 @app.get("/api/modules/<module_id>")
 def get_module(module_id):
-    return
     module = get_module_by_id(module_id)
     if module:
         return jsonify({"module": module})
@@ -144,7 +123,6 @@ def get_module(module_id):
 #post a new sensor reading from a module
 @app.post("/api/readings")
 def post_reading():
-    return
     """
     store a reading in MongoDB
     
