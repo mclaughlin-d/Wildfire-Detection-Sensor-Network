@@ -15,6 +15,7 @@ export type ModuleReading = {
   humidity: number;
   gas_sensor: number;
   pack_voltage: number;
+  fire_confidence: number | null;
   payload: number[] | null;
 };
 

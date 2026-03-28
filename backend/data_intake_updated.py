@@ -5,11 +5,15 @@ import requests
 import serial
 import struct
 import time
+<<<<<<< HEAD
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+=======
+>>>>>>> d7e0e1f (frontend updates)
 from dataclasses import dataclass
-
+from fire_confidence import compute_fire_confidence
+ 
 
 MESSAGE_SIZE = 214
 PAYLOAD_PIXEL_COUNT = 96
@@ -17,7 +21,7 @@ PAYLOAD_PIXEL_COUNT = 96
 _STRUCT_FORMAT = f"<BBHHHHfff{PAYLOAD_PIXEL_COUNT}H"
 _STRUCT = struct.Struct(_STRUCT_FORMAT)
 
-total_frames = [[[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)], [[0] * 32 for _ in range(24)]]
+total_frames = [[[0] * 32 for _ in range(24)] for _ in range(4)]  # 4 thermal camera angles (0-3)
 last_message = None
 
 #added
@@ -90,11 +94,6 @@ def parse_message(data: bytes) -> SensorMessage:
     return msg
 
 
-def uint16_to_float16(values: list[int]):
-    raw_array = np.array(values, dtype=np.uint16)
-    return raw_array.view(np.float16).astype(np.float32)
-
-
 def serial_reader(port: str, baud_rate: int, data_queue: queue.Queue, stop_event: threading.Event) -> None:
     """Reads data from a COM port in chunks and places them into a queue."""
     try:
@@ -142,7 +141,7 @@ def data_processor(data_queue: queue.Queue, stop_event: threading.Event) -> None
     print("[Processor] Stopped.")
 
 
-def _post_reading(sensor_msg: SensorMessage) -> None:
+def _post_reading(sensor_msg: SensorMessage, fire_confidence: float) -> None:
     module_id = _MODULE_ID_MAP.get(sensor_msg.module_id, f"mod-{sensor_msg.module_id:03d}")
     reading = {
         "module_id":      module_id,
@@ -153,6 +152,7 @@ def _post_reading(sensor_msg: SensorMessage) -> None:
         "humidity":       round(float(sensor_msg.humidity),     4),
         "gas_sensor":     int(sensor_msg.gas_sensor),
         "pack_voltage":   round(float(sensor_msg.pack_voltage), 4),
+        "fire_confidence": fire_confidence,
         "payload":        sensor_msg.payload,
 
     }
@@ -170,25 +170,16 @@ def process_chunk(chunk: bytes) -> None:
     print(f"[Processor] Processing {len(chunk)} bytes: {chunk[:16].hex()}...")
     try:
         sensor_msg = parse_message(chunk)
+        fire_confidence = compute_fire_confidence(
+            sensor_msg.temperature,
+            sensor_msg.humidity,
+            sensor_msg.gas_sensor,
+        )
         print(sensor_msg)
-        _post_reading(sensor_msg)
+        print(f"fire_confidence={fire_confidence:.4f}")
+        _post_reading(sensor_msg, fire_confidence) 
     except ValueError:
         print("Wrong number of bytes")
-
-
-def display_frame_data(therm1, fig):
-    """Called from the main thread to update the plot once."""
-    if last_message is None:
-        return
-
-    frame_data = [data for row in total_frames[last_message.sequence_num] for data in row]
-    float_values = uint16_to_float16(frame_data)
-    data_array = np.reshape(float_values, (24, 32))
-
-    therm1.set_data(np.fliplr(data_array))
-
-    fig.canvas.draw()
-    fig.canvas.flush_events()
 
 
 
@@ -202,13 +193,6 @@ def main() -> None:
     args = parse_args()
     data_queue = queue.Queue()
     stop_event = threading.Event()
-
-    fig, ax = plt.subplots(figsize=(12, 7))
-    therm1 = ax.imshow(np.zeros((24, 32)), vmin=0, vmax=40)
-    cbar = fig.colorbar(therm1)
-    cbar.set_label('Temperature [$^{\circ}$C]', fontsize=14)
-    plt.ion()
-    plt.show()
 
     reader_thread = threading.Thread(
         target=serial_reader,
@@ -229,13 +213,11 @@ def main() -> None:
     # Main thread owns the plot update loop
     try:
         while reader_thread.is_alive():
-            display_frame_data(therm1, fig)
             time.sleep(0.1)
     except KeyboardInterrupt:
         print("\n[Main] Interrupted by user. Shutting down.")
     finally:
         stop_event.set()
-        plt.close(fig)
 
 if __name__ == "__main__":
     main()

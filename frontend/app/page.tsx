@@ -224,7 +224,7 @@ export default function Home() {
 
       <div className="mt-6">
         <div className=" bottom-10 left-10">
-          <h1 className="text-7xl font-bold">Team Name</h1>
+          <h1 className="text-7xl font-bold">HEAT SEEKERS</h1>
         </div>
       </div>
     </div>

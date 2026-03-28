@@ -49,23 +49,25 @@ def post_reading():
     """
     data = request.get_json()
 
-    gas_sensor = data.get("gas_sensor", data.get("gas_raw")) if data else None
-    required_fields = ["module_id", "temperature", "humidity", "pack_voltage"]
-    if not data or not all(field in data for field in required_fields) or gas_sensor is None:
+    required_fields = ["module_id", "temperature", "humidity", "pack_voltage", "gas_sensor"]
+    if not data or not all(field in data for field in required_fields):
         return jsonify({
             "error": "bad_request",
             "message": "Missing required reading fields"
         }), 400
+
+    fire_confidence = data.get("fire_confidence")
 
     result = insert_reading(
         module_id=data["module_id"],
         sequence_num=data.get("sequence_num"),
         row_sequence=data.get("row_sequence"),
         timestamp=data.get("timestamp"),
-        gas_sensor=int(gas_sensor),
+        gas_sensor=int(data["gas_sensor"]),
         temperature=float(data["temperature"]),
         humidity=float(data["humidity"]),
         pack_voltage=float(data["pack_voltage"]),
+        fire_confidence=float(fire_confidence) if fire_confidence is not None else None,
         payload=data.get("payload", [])
     )
     return jsonify({

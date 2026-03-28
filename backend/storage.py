@@ -9,6 +9,7 @@ load_dotenv()
 
 _client = None
 _db = None
+FIRE_CONFIDENCE_FLAG_THRESHOLD = 3.0
 
 def init_db():
     """Initialize MongoDB connection and create indexes"""
@@ -102,13 +103,27 @@ def get_module_by_id(module_id):
     return None
 
 
+def _update_module_flag(module_id, fire_confidence):
+    """Set module flagged status from latest fire confidence when provided."""
+    if fire_confidence is None:
+        return
+
+    module = get_module_by_id(module_id)
+    if module is None:
+        return
+
+    module["flagged"] = fire_confidence > FIRE_CONFIDENCE_FLAG_THRESHOLD
+
+
 #--------------------------------------------------------------------------------
 #MongoDB read/write functions
 def insert_reading(module_id, sequence_num=None, timestamp=None, row_sequence=None,
                    temperature=None, humidity=None, gas_sensor=None,
-                   pack_voltage=None, payload=None):
+                   pack_voltage=None, fire_confidence=None, payload=None):
     db = get_db()
     readings = db["readings"]
+
+    _update_module_flag(module_id, fire_confidence)
 
     reading = {
         "module_id":   module_id,
@@ -119,6 +134,7 @@ def insert_reading(module_id, sequence_num=None, timestamp=None, row_sequence=No
         "temperature": temperature,
         "humidity":    humidity,
         "pack_voltage": pack_voltage,
+        "fire_confidence": fire_confidence,
         "payload": payload
 
     }
