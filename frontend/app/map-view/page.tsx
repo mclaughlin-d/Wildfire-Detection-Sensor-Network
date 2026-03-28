@@ -72,10 +72,13 @@ function ThermalCanvas({
       const seq = r.sequence_num;
       const row = r.row_sequence;
       if (seq < 0 || seq > 3 || row < 0 || row > 7) continue;
-      if (filled[seq][row]) continue;
-      filled[seq][row] = true;
+      if (filled[3 - seq][row]) continue;
+      filled[3 - seq][row] = true;
       for (let i = 0; i < 3; i++) {
-        frames[seq][row * 3 + i] = r.payload.slice(i * 32, i * 32 + 32);
+        console.log(r.payload)
+        console.log(frames)
+        frames[3 - seq][row * 3 + i] = r.payload.slice(i * 32, i * 32 + 32);
+        frames[3 - seq][row * 3 + i].reverse()
       }
     }
 
@@ -83,7 +86,7 @@ function ThermalCanvas({
     // Input: (24, 32) → Output: (32, 24)   result[i][j] = frame[j][31 - i]
     const transformed = frames.map((frame) =>
       Array.from({ length: 32 }, (_, i) =>
-        Array.from({ length: 24 }, (_, j) => frame[j][31 - i]),
+        Array.from({ length: 24 }, (_, j) => frame[j][i]),
       ),
     );
 
@@ -110,12 +113,12 @@ function ThermalCanvas({
 
     // Apply fliplr: reverse each row (matching firmware np.fliplr)
     const dataArray: number[][] = [];
-    for (let row = 0; row < 32; row++) {
+    for (let row = 31; row >= 0; row--) {
       const rowData: number[] = [];
       for (let col = 0; col < 96; col++) {
         rowData.push(floatData[row * 96 + col]);
       }
-      dataArray.push(rowData.reverse());
+      dataArray.push(rowData);
     }
 
     const SCALE = 5;

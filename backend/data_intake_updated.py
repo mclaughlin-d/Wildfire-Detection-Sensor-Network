@@ -5,14 +5,12 @@ import requests
 import serial
 import struct
 import time
-<<<<<<< HEAD
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
-=======
->>>>>>> d7e0e1f (frontend updates)
 from dataclasses import dataclass
 from fire_confidence import compute_fire_confidence
+import cv2
  
 
 MESSAGE_SIZE = 214
@@ -92,6 +90,34 @@ def parse_message(data: bytes) -> SensorMessage:
     )
     last_message = msg
     return msg
+
+
+def uint16_to_float16(values: list[int]):
+    raw_array = np.array(values, dtype=np.uint16)
+    return raw_array.view(np.float16).astype(np.float32)
+
+
+def display_frame_data(therm1, fig):
+    """Called from the main thread to update the plot once."""
+    if last_message is None:
+        return
+
+
+    frame0 = np.rot90(np.flip(np.array(total_frames[0])))
+    frame1 = np.rot90(np.flip(np.array(total_frames[1])))
+    frame2 = np.rot90(np.flip(np.array(total_frames[2])))
+    frame3 = np.rot90(np.flip(np.array(total_frames[3])))
+
+    overall_data = np.hstack((frame3, frame2, frame1, frame0))
+    overall_data = overall_data.flatten()
+
+    float_values = uint16_to_float16(overall_data)
+    data_array = np.reshape(float_values, (32, 24 * 4))
+    therm1.set_data(np.fliplr(data_array))
+    therm1.set_clim(vmin=np.min(data_array), vmax=np.max(data_array))
+
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
 
 def serial_reader(port: str, baud_rate: int, data_queue: queue.Queue, stop_event: threading.Event) -> None:
@@ -194,6 +220,13 @@ def main() -> None:
     data_queue = queue.Queue()
     stop_event = threading.Event()
 
+    fig, ax = plt.subplots(figsize=(12, 7))
+    therm1 = ax.imshow(np.zeros((32, 24 * 4)), vmin=0, vmax=40)
+    cbar = fig.colorbar(therm1)
+    cbar.set_label('Temperature [$^{\circ}$C]', fontsize=14)
+    plt.ion()
+    plt.show()
+    
     reader_thread = threading.Thread(
         target=serial_reader,
         args=(args.port, args.baud, data_queue, stop_event),
@@ -213,6 +246,7 @@ def main() -> None:
     # Main thread owns the plot update loop
     try:
         while reader_thread.is_alive():
+            display_frame_data(therm1, fig)
             time.sleep(0.1)
     except KeyboardInterrupt:
         print("\n[Main] Interrupted by user. Shutting down.")
