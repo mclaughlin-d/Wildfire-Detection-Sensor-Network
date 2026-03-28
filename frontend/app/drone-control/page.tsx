@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { useState, useRef } from "react";
 import { FaArrowRight } from "react-icons/fa";
-// import io from 'socket.io-client';
 
 const STREAM_URL = "http://localhost:5001/api/drone/stream";
 export default function DroneControl() {
@@ -10,20 +9,9 @@ export default function DroneControl() {
   const localVideoRef = useRef(null);
   const [socket, setSocket] = useState(null);
 
-  // const DroneVideo = () => {
-  //   const newSocket = io('http://localhost:5000');
-  //   setSocket(newSocket);
-
-  //   navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-  //     .then(stream => {
-  //       localVideoRef.current.srcObject = stream;
-
-  //     })
-  // }
-
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="grid grid-rows-2 mt-20 mb-20 gap-4">
+      <div className="grid grid-rows-3 mt-20 mb-20 gap-4">
         <div
           className="p-12 justify-center items-center flex rounded-lg mb-4 text-2xl font-semibold"
           style={{
@@ -32,16 +20,16 @@ export default function DroneControl() {
         >
           Drone Status: {droneStatus ? "Deployed" : "Not Deployed"}
         </div>
-
-        <img
-          src={STREAM_URL}
-          alt="Drone feed"
-          style={{ width: "640px", height: "480px", display: "block" }}
-          // onError={() => console.error("Stream connection lost")}
-        />
-        {/* <video
-        ref={localVideoRef}
-        /> */}
+        <div className="flex flex-col w-full justify-center align-middle bg-gray-600 rounded-lg p-4">
+          <div className="justify-center items-center flex">
+            <h3 className="font-bold text-2xl">Drone Feed</h3>
+          </div>
+          <img
+            src={STREAM_URL}
+            alt="Drone feed"
+            style={{ width: "640px", height: "480px", display: "block" }}
+          />
+        </div>
         <div
           className="p-12 justify-center flex items-center rounded-lg mt-4 text-2xl font-semibold hover:opacity-80 transition cursor-pointer"
           style={{ backgroundColor: "var(--secondary-color)" }}
