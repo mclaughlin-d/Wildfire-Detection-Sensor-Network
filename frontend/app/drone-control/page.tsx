@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 
 export default function DroneControl() {
-  const [droneStatus, setDroneStatus] = useState<boolean>(false);
+  const [droneStatus, setDroneStatus] = useState<boolean>(true);
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="grid grid-rows-2 mt-20 mb-20 gap-4">
