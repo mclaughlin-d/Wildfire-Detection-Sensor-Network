@@ -4,6 +4,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torchvision.models import resnet50, ResNet50_Weights
 import argparse
+from torchmetrics import ConfusionMatrix
 
 
 if torch.cuda.is_available():       
@@ -30,7 +31,7 @@ def main():
 
     args = parser.parse_args()
     base_path = args.dataset_path
-    epochs = args.epochs
+    epochs = int(args.epochs)
     outfile = args.outfile
     batch_size = args.batch_size
 
@@ -49,7 +50,8 @@ def main():
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     model = model.to(device)
 
-    criterion = nn.CrossEntropyLoss()
+    weights = torch.tensor([1.0, 2.0, 1.0]).to(device)
+    criterion = nn.CrossEntropyLoss(weight=weights)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     model.train()
@@ -80,6 +82,7 @@ def main():
     model.eval()
 
     test_correct = 0
+    confmat = ConfusionMatrix(task="multiclass", num_classes=3).to(device)
     print(f"Testing on {dataset_sizes['test']} test samples")
     with torch.no_grad():
         for inputs, labels in test_dataloader:
@@ -88,8 +91,11 @@ def main():
             outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
             test_correct += torch.sum(preds == labels).item()
+            confmat.update(preds, labels)
 
     print(f'Test Acc: {test_correct / dataset_sizes["test"]:.4f}')
+    matrix = confmat.compute()
+    print(matrix)
 
     torch.save(model.state_dict(), outfile)
 

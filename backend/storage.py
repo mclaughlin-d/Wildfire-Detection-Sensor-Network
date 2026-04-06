@@ -15,9 +15,10 @@ def init_db():
     """Initialize MongoDB connection and create indexes"""
     global _client, _db
     uri = os.getenv("MONGODB_URI")
+    str_mongo = os.getenv("MONGO_STR")
     db_name = os.getenv("MONGODB_DB", "capstone")
     
-    _client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+    _client = MongoClient(str_mongo, serverSelectionTimeoutMS=5000)
     _db = _client[db_name]
     
     #create indexes
