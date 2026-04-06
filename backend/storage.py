@@ -37,7 +37,7 @@ def get_db():
 _modules = [
     {
         "id": "mod-001",
-        "flagged": True,
+        "flagged": False,
         "latitude": 42.3601,
         "longitude": -71.0589,
     },
@@ -61,7 +61,7 @@ _modules = [
     },
     {
         "id": "mod-005",
-        "flagged": True,
+        "flagged": False,
         "latitude": 42.3655,
         "longitude": -71.0546,
     },
@@ -83,13 +83,25 @@ _modules = [
         "latitude": 42.3321,
         "longitude": -71.1002,
     },
-    {
-        "id": "mod-009",
-        "flagged": False,
-        "latitude": 42.3321,
-        "longitude": -71.1002,
-    },
+    # {
+    #     "id": "mod-009",
+    #     "flagged": False,
+    #     "latitude": 42.3321,
+    #     "longitude": -71.1002,
+    # },
 ]
+
+def restore_flags_from_db():
+    """On startup, set each module's flagged state from its latest fire_confidence reading."""
+    db = get_db()
+    readings_col = db["readings"]
+    for module in _modules:
+        latest = readings_col.find_one(
+            {"module_id": module["id"], "fire_confidence": {"$ne": None}},
+            sort=[("timestamp", -1)]
+        )
+        if latest and latest.get("fire_confidence") is not None:
+            module["flagged"] = latest["fire_confidence"] > FIRE_CONFIDENCE_FLAG_THRESHOLD
 
 #returns list of all modules with basic data
 def get_modules():

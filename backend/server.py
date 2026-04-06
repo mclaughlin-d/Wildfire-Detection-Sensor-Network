@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from storage import get_module_by_id, get_modules, init_db, insert_reading, get_module_readings
+from storage import get_module_by_id, get_modules, init_db, insert_reading, get_module_readings, restore_flags_from_db
 
 app = Flask(__name__)
 
@@ -9,6 +9,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 #initialize db
 init_db()
+restore_flags_from_db()
 
 #check
 @app.get("/api/health")
