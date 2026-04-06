@@ -11,7 +11,7 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstApp', '1.0')
 from gi.repository import Gst, GstApp, GLib
 
-PRETRAINED_FIRE_PATH = './fire_classify_trained.pth'
+PRETRAINED_FIRE_PATH = './weighted_fine_tune.pth'
 
 PRED_TO_LABEL = {
     0: 'Smoke',
@@ -73,6 +73,7 @@ def on_new_sample(sink):
             frame = frame[:, :width*3].reshape((height, width, 3))
         else:
             frame = np.frombuffer(map_info.data, dtype=np.uint8).reshape((height, width, 3))
+
 
         pil_img = Image.fromarray(frame)
         img_tensor = transform(pil_img).unsqueeze(0).to(device)
