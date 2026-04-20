@@ -33,7 +33,7 @@ def main():
     base_path = args.dataset_path
     epochs = int(args.epochs)
     outfile = args.outfile
-    batch_size = args.batch_size
+    batch_size = int(args.batch_size)
 
     train_dataset = datasets.ImageFolder(root=f'{base_path}/train', transform=transform)
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)

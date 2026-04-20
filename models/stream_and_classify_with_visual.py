@@ -168,7 +168,7 @@ def main():
             pil_img = Image.fromarray(frame)
             photo = ImageTk.PhotoImage(pil_img)
             img_label.configure(image=photo)
-            img_label.image = photo  # keep reference
+            img_label.image = photo
             pred_label.configure(text=label)
         except queue.Empty:
             pass
