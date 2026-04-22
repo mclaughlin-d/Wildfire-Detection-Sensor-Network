@@ -1,3 +1,8 @@
+"""
+"Membership functions" for each reading.
+Note that these were tuned using ambient temperature for thermal data, not the thermal camera temperature.
+"""
+
 # temperature triangles
 TEMP_VERY_LOW = [-float('inf'), 0, 30]
 TEMP_LOW = [20.5, 22, 40]
@@ -14,7 +19,7 @@ GAS_HIGH = [630, 670, 720]
 GAS_VERY_HIGH = [700, 850, float('inf')]
 gas_memberships = [GAS_VERY_LOW, GAS_LOW, GAS_MEDIUM, GAS_HIGH, GAS_VERY_HIGH]
 
-# humidity triangles - percent (ordered for fire risk scoring)
+# humidity triangles (Relative humidity: % value)
 HUMIDITY_VERY_LOW = [80, 90, float('inf')]
 HUMIDITY_LOW = [60, 70, 80]
 HUMIDITY_MEDIUM = [50, 60, 65]
@@ -22,9 +27,18 @@ HUMIDITY_HIGH = [22, 40, 50]
 HUMIDITY_VERY_HIGH = [float('-inf'), 10, 25]
 hum_memberships = [HUMIDITY_VERY_LOW, HUMIDITY_LOW, HUMIDITY_MEDIUM, HUMIDITY_HIGH, HUMIDITY_VERY_HIGH]
 
-
+"""
+Return fuzzy membership of value in a triangular set [left, center, right].
+    Essentially, this function calculates the value of a function of the form:
+    f(x)
+    1_| 
+      |   /\ 
+      ---/  \-------> x
+    
+    Where the first endpoint of the triangle is at x=left, the vertex is at x=center, 
+    and the second endpoint is at x=right
+"""
 def calc_membership(triangle, value):
-    """Return fuzzy membership of value in a triangular set [left, center, right]."""
     left, center, right = triangle
 
     if value <= left or value >= right:
@@ -43,7 +57,8 @@ def calc_membership(triangle, value):
         return (right - value) / (right - center)
 
 
-def fuzzify_and_detuz(temp, hum, gas):
+"""Calculates the confidence given the intervals defined in this file and the three measurements."""
+def confidence_from_measurements(temp, hum, gas):
     temp_classes = [calc_membership(t, temp) for t in temp_memberships]
     hum_classes = [calc_membership(t, hum) for t in hum_memberships]
     gas_classes = [calc_membership(t, gas) for t in gas_memberships]
@@ -62,4 +77,4 @@ def fuzzify_and_detuz(temp, hum, gas):
 
 
 def compute_fire_confidence(temperature, humidity, gas_sensor):
-    return fuzzify_and_detuz(temperature, humidity, gas_sensor)
+    return confidence_from_measurements(temperature, humidity, gas_sensor)

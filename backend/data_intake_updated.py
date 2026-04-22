@@ -6,23 +6,23 @@ import serial
 import struct
 import time
 import numpy as np
-import datetime
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from fire_confidence import compute_fire_confidence
-import cv2
  
 
 MESSAGE_SIZE = 214
 PAYLOAD_PIXEL_COUNT = 96
 
-_STRUCT_FORMAT = f"<BBHHHHfff{PAYLOAD_PIXEL_COUNT}H"
-_STRUCT = struct.Struct(_STRUCT_FORMAT)
+MESSAGE_STRUCT_FMT = f"<BBHHHHfff{PAYLOAD_PIXEL_COUNT}H"
+MESSAGE_STRUCT = struct.Struct(MESSAGE_STRUCT_FMT)
 
-total_frames = [[[0] * 32 for _ in range(24)] for _ in range(4)]  # 4 thermal camera angles (0-3)
+# stores last 4 fragments for a given reading sequence
+total_frames = [[[0] * 32 for _ in range(24)] for _ in range(4)]
+# stores the last full message (SensorMessage instance)
 last_message = None
 
-#added
+# for posting to the database
 API_BASE_URL = "http://localhost:5001/api"
 _MODULE_ID_MAP: dict[int, str] = {i: f"mod-{i:03d}" for i in range(1, 10)}
 
@@ -54,13 +54,13 @@ class SensorMessage:
         )
 
 
+"""Parse a 214-byte sensor message into a SensorMessage."""
 def parse_message(data: bytes) -> SensorMessage:
-    """Parse a 214-byte sensor message into a SensorMessage."""
     global last_message, total_frames
     if len(data) != MESSAGE_SIZE:
         raise ValueError(f"Expected {MESSAGE_SIZE} bytes, got {len(data)}")
     
-    unpacked = _STRUCT.unpack(data)
+    unpacked = MESSAGE_STRUCT.unpack(data)
     module_id = data[0] & 0x0F
     sequence_num = (data[0] & 0xF0) >> 4
     row_sequence = unpacked[1]
@@ -92,17 +92,18 @@ def parse_message(data: bytes) -> SensorMessage:
     return msg
 
 
+"""Helper function to convert from 16-bit float (in int form) to actual float"""
 def uint16_to_float16(values: list[int]):
     raw_array = np.array(values, dtype=np.uint16)
     return raw_array.view(np.float16).astype(np.float32)
 
 
+"""Displays thermal camera data"""
 def display_frame_data(therm1, fig):
-    """Called from the main thread to update the plot once."""
     if last_message is None:
         return
 
-
+    # must flip and rotate frames for display
     frame0 = np.rot90(np.flip(np.array(total_frames[0])))
     frame1 = np.rot90(np.flip(np.array(total_frames[1])))
     frame2 = np.rot90(np.flip(np.array(total_frames[2])))
@@ -120,8 +121,12 @@ def display_frame_data(therm1, fig):
     fig.canvas.flush_events()
 
 
+"""
+Serial reader thread, which continuously reads data from serial port
+    Assumes each message starts with 'Data: ' and ends in a newline '\n'
+"""
 def serial_reader(port: str, baud_rate: int, data_queue: queue.Queue, stop_event: threading.Event) -> None:
-    """Reads data from a COM port in chunks and places them into a queue."""
+    """Reads data from a serial port in chunks and places them into a queue."""
     try:
         with serial.Serial(port, baudrate=baud_rate, timeout=1) as ser:
             print(f"[Reader] Opened {port} at {baud_rate} baud.")
@@ -154,6 +159,7 @@ def serial_reader(port: str, baud_rate: int, data_queue: queue.Queue, stop_event
         stop_event.set()
 
 
+"""For the processing thread, which takes in bytes objects from the data queue"""
 def data_processor(data_queue: queue.Queue, stop_event: threading.Event) -> None:
     """Processes chunks of data from the queue in a separate thread."""
     print("[Processor] Started.")
@@ -167,6 +173,7 @@ def data_processor(data_queue: queue.Queue, stop_event: threading.Event) -> None
     print("[Processor] Stopped.")
 
 
+"""Posts a given reading to the database"""
 def _post_reading(sensor_msg: SensorMessage, fire_confidence: float) -> None:
     module_id = _MODULE_ID_MAP.get(sensor_msg.module_id, f"mod-{sensor_msg.module_id:03d}")
     reading = {
@@ -192,6 +199,7 @@ def _post_reading(sensor_msg: SensorMessage, fire_confidence: float) -> None:
         print(f"[API] POST error: {e}")
         
 
+"""Takes in a bytes object (assumes 214-byte message from sensor module) and parses the information"""
 def process_chunk(chunk: bytes) -> None:
     print(f"[Processor] Processing {len(chunk)} bytes: {chunk[:16].hex()}...")
     try:
@@ -208,18 +216,15 @@ def process_chunk(chunk: bytes) -> None:
         print("Wrong number of bytes")
 
 
-
-def parse_args() -> argparse.Namespace:
+def main() -> None:
     parser = argparse.ArgumentParser(description="Read 214-byte chunks from a serial port.")
     parser.add_argument("port", type=str, help="port to read from")
     parser.add_argument("--baud", type=int, default=115200, help="Baud rate (default: 115200)")
-    return parser.parse_args()
-
-def main() -> None:
-    args = parse_args()
+    
     data_queue = queue.Queue()
     stop_event = threading.Event()
 
+    # This has to be created here (in the main thread) so tk does not error
     fig, ax = plt.subplots(figsize=(12, 7))
     therm1 = ax.imshow(np.zeros((32, 24 * 4)), vmin=0, vmax=40)
     cbar = fig.colorbar(therm1)
@@ -227,12 +232,16 @@ def main() -> None:
     plt.ion()
     plt.show()
     
+    # this thread reads data from the serial port continuously
+    # it puts bytes into the data queue created at the top of this function
     reader_thread = threading.Thread(
         target=serial_reader,
         args=(args.port, args.baud, data_queue, stop_event),
         daemon=True,
         name="SerialReader",
     )
+    # this thread parses messages from the bytes put in data_queue, posts the corresponding readings,
+    # and displays the thermal camera data
     processor_thread = threading.Thread(
         target=data_processor,
         args=(data_queue, stop_event),
