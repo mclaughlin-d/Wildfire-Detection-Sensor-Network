@@ -1,4 +1,4 @@
-# Wildfire Sensor Detection Network
+# Wildfire Detection Sensor Network
 This project contains source code used for our EE/CE Capstone project.
 
 ## Project Structure
